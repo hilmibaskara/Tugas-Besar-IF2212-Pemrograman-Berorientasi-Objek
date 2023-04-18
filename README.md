@@ -1,6 +1,6 @@
 # Tugas-Besar-IF2212-Pemrograman-Berorientasi-Objek
 
-Anggota Kelompok:
+Kelompok 1 K2. Anggota Kelompok:
 
 18221042	Ghaylan Muhammad Fatih\
 18221050	Darren\
