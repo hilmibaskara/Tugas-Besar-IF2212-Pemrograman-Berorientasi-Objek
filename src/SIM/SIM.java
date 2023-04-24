@@ -10,6 +10,7 @@ public class SIM {
     private float mood;
     private float kesehatan;
     private String status;
+    private Time currentTime;
 
     public SIM(String namaLengkap){
         this.namaLengkap = namaLengkap;
@@ -39,6 +40,7 @@ public class SIM {
             default:
                 break;
         }
+        this.currentTime = currentTime;
     }
     public String getNamaLengkap() {
         return this.namaLengkap;
@@ -352,15 +354,16 @@ public class SIM {
         // Hitung jarak dan waktu yang diperlukan
         if (status.equals("idle")) {
             status = "berkunjung";
+            final Time finalTime = waktuBerkunjung;
             Thread t = new Thread(new Runnable() {
                 public void run() {
                 while (status.equals("berkunjung")){
                     double jarak = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
                     int waktuKunjung = (int) (jarak * 10);
-                    if (waktuBerkunjung.getMinutes() % 30 == 0 && waktuBerkunjung.getSeconds() == 0 && waktuKunjung > 0) {
+                    if (finalTime.getMinute() % 30 == 0 && finalTime.getSecond() == 0 && waktuKunjung > 0) {
                         mood += waktuKunjung / 30 * 10;
                         kekenyangan -= waktuKunjung / 30 * 10;
-                        waktuBerkunjung = new Time(waktuBerkunjung.getTime() - (waktuKunjung * 1000));
+                        finalTime.setSecond(finalTime.convertToSecond() - (waktuKunjung * 1000));
                     }
                     // Menunggu sampai waktu kunjung selesai
                     try {
@@ -368,7 +371,7 @@ public class SIM {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if (waktuBerkunjung.getTime() == 0) {
+                    if (finalTime.convertToSecond() == 0) {
                         break;
                     }
                     }
@@ -379,6 +382,7 @@ public class SIM {
             t.start();
         }
     }
+    
 
     public void buangAir(){
         if (status.equals("idle")) {
@@ -449,8 +453,9 @@ public class SIM {
         System.out.println("Sedang teleport ke " + namaRuangan);
     }
 
-    public void melihatWaktu(Time waktu){
-
+    public void melihatWaktu(){
+        System.out.println("Sekarang jam " + currentTime.displayHMS());
+        System.out.println("Sisa waktu " + currentTime.remainingTime());
     }
 
     public void mandi(){
