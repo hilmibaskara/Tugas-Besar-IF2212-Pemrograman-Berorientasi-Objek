@@ -4,4 +4,7 @@ public class BahanMakanan extends ObjekMakanan{
         super(tipe,nama,kekenyangan);
         this.harga = harga;
     }
+    public int getHarga(){
+        return harga;
+    }
 }
