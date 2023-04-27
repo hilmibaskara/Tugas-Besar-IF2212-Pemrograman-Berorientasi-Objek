@@ -8,6 +8,9 @@ public class Ruangan {
     private String name;
     private int panjang;
     private int lebar;
+
+    private ArrayList<Objek> listObjek;
+
     private Ruangan aboveRuangan;
     private Ruangan belowRuangan;
     private Ruangan rightRuangan;
@@ -22,14 +25,15 @@ public class Ruangan {
     public String getRuanganName() {
         return this.name;
     }
-    public ArrayList getObjectList(){
-
+    public ArrayList<Objek> getObjectList(){
+        return this.listObjek;
     }
 
     public void addObject(Objek object, loc Location) {
-
+        listObjek.add(object);
+        
     }
-    public void removeObject(object: Objek) {
+    public void removeObject(Objek objek) {
         
     }
     public void moveObject(object: Objek, loc: Point) {
