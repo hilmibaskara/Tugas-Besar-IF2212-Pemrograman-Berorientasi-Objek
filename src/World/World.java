@@ -3,7 +3,8 @@ public class World {
     private int panjang = 0;
     private int lebar = 0;
     private List<Rumah> listRumah;
-
+    
+    
     public World(int panjang, int lebar) {
         this.panjang = panjang;
         this.lebar=lebar;
@@ -19,5 +20,9 @@ public class World {
 
     public List<Rumah> getRumah(){
         return this.listRumah;
+    }
+    
+    public int sisaLahan(){
+        return (64*64) - listRumah.size();
     }
 }
