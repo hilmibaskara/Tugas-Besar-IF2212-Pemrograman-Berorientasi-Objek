@@ -1,11 +1,11 @@
 import java.util.*;
 public class Masakan extends ObjekMakanan{
-    private List<String> ListBahan;
-    public Masakan(String nama, float kekenyangan, List<String> ListBahan){
-        super(nama,kekenyangan);
+    private List<ObjekMakanan> ListBahan;
+    public Masakan(String nama, float kekenyangan, List<ObjekMakanan> ListBahan){
+        super(nama,kekenyangan,99999);
         this.ListBahan = ListBahan;
     }
-    public List<String> getListBahan(){
+    public List<ObjekMakanan> getListBahan(){
         return ListBahan;
     }
 }

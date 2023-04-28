@@ -1,3 +1,4 @@
+import Objek.Objek;
 public class ObjekMakanan extends Objek{
     
     private float kekenyangan;
