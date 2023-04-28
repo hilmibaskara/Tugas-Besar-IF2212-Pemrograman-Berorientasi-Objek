@@ -55,9 +55,10 @@ public class Inventory {
     }
 
     public void printInventory(){
-        System.out.println("Inventory " + getOwner().getNamaLengkap());
-        for (Objek objek : objects){
-            System.out.println(objek.getNama());
+        System.out.println("Inventory milik " + getOwner().getNamaLengkap() + ":");
+        for (int i = 0; i < objects.size(); i++) {
+            Objek objek = objects.get(i);
+            System.out.println((i+1)+ ". " + objek.getNama());
         }
     }
 

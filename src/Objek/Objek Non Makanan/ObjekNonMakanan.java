@@ -1,3 +1,4 @@
+import Objek.Objek;
 public class ObjekNonMakanan extends Objek{
     private int panjang;
     private int lebar;
