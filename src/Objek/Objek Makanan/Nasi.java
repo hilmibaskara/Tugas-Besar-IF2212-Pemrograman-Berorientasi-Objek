@@ -1,4 +1,4 @@
-public class Nasi extends BahanMakanan{
+public class Nasi extends ObjekMakanan{
     public Nasi(){
         super("Nasi",5,5);
     }

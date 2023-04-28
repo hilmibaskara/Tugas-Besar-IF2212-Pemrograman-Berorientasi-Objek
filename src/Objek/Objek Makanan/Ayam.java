@@ -1,4 +1,4 @@
-public class Ayam extends BahanMakanan{
+public class Ayam extends ObjekMakanan{
     public Ayam(){
         super("Ayam",8,10);
     }
