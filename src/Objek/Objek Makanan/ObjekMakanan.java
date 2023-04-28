@@ -1,8 +1,8 @@
 public class ObjekMakanan extends Objek{
     
     private float kekenyangan;
-    public ObjekMakanan(String tipe, String nama, float kekenyangan){
-        super(tipe, nama);
+    public ObjekMakanan(String nama, float kekenyangan){
+        super(nama);
         
         this.kekenyangan = kekenyangan;
     }

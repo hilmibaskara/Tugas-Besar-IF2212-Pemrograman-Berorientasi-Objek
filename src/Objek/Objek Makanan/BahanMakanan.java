@@ -1,7 +1,7 @@
 public class BahanMakanan extends ObjekMakanan{
     private int harga;
-    public BahanMakanan(String tipe, String nama, float kekenyangan, int harga){
-        super(tipe,nama,kekenyangan);
+    public BahanMakanan(String nama, float kekenyangan, int harga){
+        super(nama,kekenyangan);
         this.harga = harga;
     }
     public int getHarga(){

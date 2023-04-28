@@ -4,6 +4,6 @@ public class NasiAyam extends Masakan{
     ListBahan.add("Nasi");
     ListBahan.add("Ayam");
     public NasiAyam(){
-        super("Masakan","Nasi Ayam",16,ListBahan);
+        super("Nasi Ayam",16,ListBahan);
     }
 }
