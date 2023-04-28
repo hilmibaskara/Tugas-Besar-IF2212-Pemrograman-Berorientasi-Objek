@@ -1,16 +1,22 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Duration;
 
 public class SIM {
     private String namaLengkap;
     private Job pekerjaan;
     private int uang;
-    private List<String> inventory;
+    private Inventory inventory;
     private float kekenyangan;
     private float mood;
     private float kesehatan;
     private String status;
     private Time currentTime;
+    private LocalDateTime waktuMulaiBekerja;
+    private LocalDate tanggalPenggantianPekerjaan;
+    private Point simLocations;
 
     public SIM(String namaLengkap){
         this.namaLengkap = namaLengkap;
@@ -19,7 +25,6 @@ public class SIM {
         this.mood = 80;
         this.kesehatan = 80;
         this.status = "idle";
-        this.inventory = new ArrayList<String>();
         int randomJob = (int) (Math.random() * 5) + 1;
         switch (randomJob) {
             case 1:
@@ -40,7 +45,6 @@ public class SIM {
             default:
                 break;
         }
-        this.currentTime = currentTime;
     }
     public String getNamaLengkap() {
         return this.namaLengkap;
@@ -66,11 +70,11 @@ public class SIM {
         this.uang = uang;
     }
 
-    public List<String> getInventory() {
+    public Inventory getInventory() {
         return this.inventory;
     }
 
-    public void setInventory(ArrayList<String> inventory) {
+    public void setInventory(Inventory inventory) {
         this.inventory = inventory;
     }
 
@@ -106,8 +110,20 @@ public class SIM {
         this.status = status;
     }
 
+    //implementasi menghitung waktu bekerja
+    private int getDurasiBekerja() {
+        if (waktuMulaiBekerja == null) {
+            return 0;
+        } else {
+            LocalDateTime waktuSekarang = LocalDateTime.now();
+            Duration durasi = Duration.between(waktuMulaiBekerja, waktuSekarang);
+            return (int) durasi.toSeconds();
+        }
+    }
+
+    //implementasi aksi membeli objek
     public void buyObjek(Objek barang){
-        int hargaBarang = barang.hargaBarang(barang);
+        int hargaBarang = barang.getHarga();
         if (uang >= hargaBarang) {
             // Kurangi uang sesuai harga barang
             uang -= hargaBarang;
@@ -123,13 +139,16 @@ public class SIM {
             }
 
             // Tambahkan barang ke inventory
-            inventory.add(barang);
+            inventory.addObject(barang);
             System.out.println("Barang " + barang + " telah diterima dan masuk ke dalam inventory.");
-        } else {
+        }
+        else {
             System.out.println("Maaf, uang tidak cukup untuk membeli barang tersebut.");
+        }
 
     }
 
+    //implementasi aksi upgrade rumah
     public void upgradeRumah(String posisi, String ruangAcuan, String namaRuanganbaru){
         if (uang >= 1500) { // cek apakah uang sim mencukupi untuk upgrade rumah
             if (getRuangan().size() > 1) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
@@ -160,7 +179,7 @@ public class SIM {
             
             getRuangan().put(namaRuanganbaru, ruanganBaru);
             uang -= 1500;
-            
+
             // Memulai thread untuk waktu pembangunan rumah
             Thread t = new Thread(new Runnable() {
                 public void run() {
@@ -180,9 +199,9 @@ public class SIM {
         }
     }
     
-
+    //implementasi aksi mengganti pekerjaan
     public void changeJob(Job pekerjaan){
-        if(this.pekerjaan != null && this.pekerjaan.getWaktuBekerja() >= 720){ //cek apakah sudah bekerja minimal 12 menit
+        if(this.pekerjaan != null && getDurasiBekerja() >= 720){ //cek apakah sudah bekerja minimal 12 menit
             int gajiBaru = pekerjaan.getGaji();
             int setengahGaji = gajiBaru / 2;
             if(this.uang >= setengahGaji){ //cek apakah SIM memiliki cukup uang untuk membayar setengah gaji
@@ -197,9 +216,13 @@ public class SIM {
         }
     }
 
+    //implementasi aksi kerja
     public void kerja(int durasi) {
         if (status.equals("idle")) {
             if (durasi % 120 == 0) { // validasi kelipatan 120 detik
+                if (waktuMulaiBekerja == null) { // jika belum pernah bekerja pada pekerjaan ini
+                    waktuMulaiBekerja = LocalDateTime.now();
+                }
                 status = "working";
                 Thread t = new Thread(new Runnable() {
                     public void run() {
@@ -285,18 +308,16 @@ public class SIM {
         }
     }
     
-
-    public void makan(Objek makanan){
+    //implementasi aksi makan
+    public void makan(ObjekMakanan makanan){
         if (status.equals("idle")) {
             status = "makan";
             Thread t = new Thread(new Runnable() {
                 public void run() {
                     while (status.equals("makan")){
-                        if(inventory.contains(makanan.getNama())){
-                            inventory.remove(makanan.getNama());
+                        if(inventory.contains(makanan)){
+                            inventory.removeObject(makanan);
                             kekenyangan += makanan.getKekenyangan();
-                            mood += makanan.getMood();
-                            kesehatan += makanan.getKesehatan();
                         }
                         else{
                             System.out.println("Tidak ada makanan tersebut di inventory.");
@@ -309,10 +330,10 @@ public class SIM {
         }
     }
 
-    public void masak(Objek menu) {
+    public void masak(Masakan menu) {
         // Validasi bahan-bahan menu
         boolean bahanTersedia = true;
-        for (String bahan : menu.getBahan()) {
+        for (BahanMakanan bahan : menu.getListBahan()) {
             if (!inventory.contains(bahan)) {
                 System.out.println("Maaf, " + bahan + " tidak tersedia dalam inventory.");
                 bahanTersedia = false;
@@ -326,7 +347,7 @@ public class SIM {
                 Thread t = new Thread(new Runnable() {
                     public void run() {
                         while (status.equals("masak")){
-                            int waktuMasak = (int) (1.5 * kekenyangan * menu.getWaktu());
+                            int waktuMasak = (int) (1.5 * menu.getKekenyangan());
                             System.out.println(namaLengkap + " sedang memasak " + menu.getNama() + " (" + waktuMasak + " detik)...");
                             try {
                                 Thread.sleep(waktuMasak * 1000);
@@ -334,10 +355,10 @@ public class SIM {
                                 e.printStackTrace();
                             }
                             // Hapus bahan-bahan yang digunakan dari inventory
-                            for (String bahan : menu.getBahan()) {
-                                inventory.remove(bahan);
+                            for (BahanMakanan bahan : menu.getListBahan()) {
+                                inventory.removeObject(bahan);
                             }
-                            inventory.add(menu.getNama());
+                            inventory.addObject(menu);
                             kekenyangan += menu.getKekenyangan();
                             mood += 10;
                             System.out.println(namaLengkap + " berhasil memasak " + menu.getNama() + " dan kekenyangannya bertambah " + menu.getKekenyangan() + " poin.");
@@ -350,40 +371,54 @@ public class SIM {
         }
     }
 
-    public void berkunjung(int x1, int y1, int x2, int y2, Time waktuBerkunjung){
-        // Hitung jarak dan waktu yang diperlukan
-        if (status.equals("idle")) {
-            status = "berkunjung";
-            final Time finalTime = waktuBerkunjung;
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                while (status.equals("berkunjung")){
-                    double jarak = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
-                    int waktuKunjung = (int) (jarak * 10);
-                    if (finalTime.getMinute() % 30 == 0 && finalTime.getSecond() == 0 && waktuKunjung > 0) {
-                        mood += waktuKunjung / 30 * 10;
-                        kekenyangan -= waktuKunjung / 30 * 10;
-                        finalTime.setSecond(finalTime.convertToSecond() - (waktuKunjung * 1000));
-                    }
-                    // Menunggu sampai waktu kunjung selesai
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if (finalTime.convertToSecond() == 0) {
-                        break;
-                    }
-                    }
-                status = "idle";
-                System.out.println("Kunjungan selesai");
-                }
-            });
-            t.start();
-        }
-    }
+    // public void berkunjung(int x1, int y1, int x2, int y2, int durasi){
+    //     // Hitung jarak dan waktu yang diperlukan
+    //     if (status.equals("idle")) {
+    //         status = "berkunjung";
+    //         Thread t = new Thread(new Runnable() {
+    //             public void run() {
+    //                 while (status.equals("berkunjung")){
+    //                     // Menghitung jarak antara lokasi saat ini dan tujuan
+    //                     double jarak = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        
+    //                     // Menghitung waktu yang dibutuhkan untuk berkunjung
+    //                     int waktuBerkunjung = (int) (jarak);
+                        
+    //                     if (durasi % 30 != 0) {
+    //                         System.out.println("Durasi harus kelipatan 30 detik.");
+    //                     } else if (durasi < waktuBerkunjung) {
+    //                         System.out.println("Maaf, durasi yang dimasukkan tidak cukup untuk berkunjung.");
+    //                     } else {
+    //                         // Hitung jumlah iterasi untuk mood dan kekenyangan
+    //                         int iterasi = durasi / 30;
+                            
+    //                         // Lakukan pengurangan mood dan kekenyangan per 30 detik selama berkunjung
+    //                         for (int i = 0; i < iterasi; i++) {
+    //                             mood += 10;
+    //                             kekenyangan -= 10;
+    //                             try {
+    //                                 Thread.sleep(30000);
+    //                             } catch (InterruptedException e) {
+    //                                 e.printStackTrace();
+    //                             }
+    //                         }
+    //                         // Menunggu waktu berkunjung
+    //                         try {
+    //                             Thread.sleep(durasi * 1000);
+    //                         } catch (InterruptedException e) {
+    //                             e.printStackTrace();
+    //                         }
+    //                     }
+    //                 }
+    //                 status = "idle";
+    //                 System.out.println("Kunjungan selesai");
+    //             }
+    //         });
+    //         t.start();
+    //     }
+    // }
     
-
+    // implementasi aksi buang air
     public void buangAir(){
         if (status.equals("idle")) {
             status = "BuangAir";
@@ -406,17 +441,17 @@ public class SIM {
         }
     }
 
+    //implementasi aksi melihat inventory
     public void melihatInventory(){
-        System.out.println("Inventory:");
-        for (String item : this.inventory) {
-            System.out.println("- " + item);
-        }
+        inventory.printInventory();
     }
     
+    //implementasi aksi memasang barang
     public void pasangBarang(String namaBarang, int panjang, int lebar, int x, int y) {
         int[][] rumah = getRumah(); // Mendapatkan layout rumah
         boolean overlap = false;
-        
+        int hargaBarang = namaBarang.getHarga();
+        String tipeBarang = namaBarang.getTipe();
         // Mengecek apakah posisi yang dipilih sudah ada barang di sana
         for (int i = x; i < x+panjang; i++) {
             for (int j = y; j < y+lebar; j++) {
@@ -435,29 +470,36 @@ public class SIM {
         } else if (panjang > 6 || lebar > 6) {
             System.out.println("Barang tidak muat dalam ruangan yang tersedia.");
         } else {
-            Barang barangBaru = new Barang(namaBarang, panjang, lebar);
+            Objek barangBaru = new ObjekNonMakanan(tipeBarang, namaBarang, panjang, lebar, hargaBarang);
             // Menambahkan barang ke list barang yang dimiliki oleh pemain
-            getBarang().add(barangBaru);
+            namaBarang.add(barangBaru);
             
             // Memasang barang pada layout rumah
             for (int i = x; i < x+panjang; i++) {
                 for (int j = y; j < y+lebar; j++) {
-                    rumah[i][j] = getBarang().indexOf(barangBaru) + 1; // Menandai ruang yang dipakai oleh barang pada layout rumah
+                    rumah[i][j] = namaBarang.indexOf(barangBaru) + 1; // Menandai ruang yang dipakai oleh barang pada layout rumah
                 }
             }
             System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
         }
     }
 
-    public void pindahRuangan(Ruangan namaRuangan){
-        System.out.println("Sedang teleport ke " + namaRuangan);
+    //implementasi aksi berpindah ruangan
+    public void berpindahRuangan(Room namaRuangan) {
+        // Perbarui lokasi SIM dengan lokasi ruangan yang dituju
+        this.posisix = namaRuangan.getX();
+        this.posisiy = namaRuangan.getY();
+    
+        System.out.println("Berhasil pindah ke " + namaRuangan.getNamaRuangan());
     }
-
+    
+    //implementasi aksi melihat waktu
     public void melihatWaktu(){
         System.out.println("Sekarang jam " + currentTime.displayHMS());
         System.out.println("Sisa waktu " + currentTime.remainingTime());
     }
 
+    //implementasi aksi mandi
     public void mandi(){
         if (status.equals("idle")) {
             status = "mandi";
@@ -481,6 +523,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi main game
     public void mainGame(){
         if (status.equals("idle")) {
             status = "mainGame";
@@ -505,6 +548,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi meneonton film
     public void menontonFilm(){
         if (status.equals("idle")) {
             status = "menontonFilm";
@@ -514,7 +558,7 @@ public class SIM {
                         int waktuNonton = 10;
                         mood += 15;
                         kekenyangan -= 5;
-                        // Menunggu sampai waktu nonton selesai
+                        // Menunggu sampai waktu menonton selesai
                         try {
                             Thread.sleep(waktuNonton * 1000);
                         } catch (InterruptedException e) {
@@ -528,6 +572,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi membaca
     public void membaca(){
         if (status.equals("idle")) {
             status = "membaca";
@@ -551,6 +596,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi membersihkan ruangan
     public void membersihkanRuangan(){
         if (status.equals("idle")) {
             status = "membersihkanRuangan";
@@ -574,6 +620,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi meditasi
     public void meditasi(){
         if (status.equals("idle")) {
             status = "meditasi";
@@ -583,7 +630,7 @@ public class SIM {
                         int waktuMeditasi = 10;
                         kekenyangan -= 5;
                         kesehatan += 10;
-                        // Menunggu sampai waktu membersihkanRuangan selesai
+                        // Menunggu sampai waktu meditasi selesai
                         try {
                             Thread.sleep(waktuMeditasi * 1000);
                         } catch (InterruptedException e) {
@@ -597,6 +644,7 @@ public class SIM {
         }
     }
 
+    //implementasi aksi belajar
     public void belajar(){
         if (status.equals("idle")) {
             status = "belajar";
@@ -607,7 +655,7 @@ public class SIM {
                         mood += 5;
                         kekenyangan -= 5;
                         kesehatan -= 5;
-                        // Menunggu sampai waktu membersihkanRuangan selesai
+                        // Menunggu sampai waktu belajar selesai
                         try {
                             Thread.sleep(waktuBelajar * 1000);
                         } catch (InterruptedException e) {
