@@ -16,13 +16,28 @@ public class Main {
                     if (count == 0) {
                         System.out.println("mulai");
                         count = 1;
+                        ingame = true;
                     }
                     else{
                         System.out.println("game sudah dimulai");
                     }
                     break;
                 case "help" :
-                    System.out.println("isi help");
+                    System.out.println("List Command");
+                    System.out.println("1. start game");
+                    System.out.println("2. help");
+                    System.out.println("3. exit");
+                    System.out.println("4. sim info");
+                    System.out.println("5. current loc");
+                    System.out.println("6. inventory");
+                    System.out.println("7. upgrade house");
+                    System.out.println("8. move room");
+                    System.out.println("9. edit room");
+                    System.out.println("10. add sim");
+                    System.out.println("11. change sim");
+                    System.out.println("12. list object");
+                    System.out.println("13. go to object");
+                    System.out.println("14. action");
                     break;
                 case "exit":
                     System.out.println("berhasil keluar");
@@ -98,6 +113,7 @@ public class Main {
                     break;
                 default:
                     System.out.println("command salah");
+                    System.out.println("ketik \"help\" untuk melihat list command");
                     break;
             }
         }
