@@ -1,5 +1,5 @@
 import Objek.Objek;
-import SIM.SIM;
+// import SIM.SIM;
 
 import java.util.*;
 public class Inventory {
@@ -69,4 +69,15 @@ public class Inventory {
     public boolean contains(Objek objek){
         return objects.contains(objek);
     }
+
+    public int getObjekAmount(Objek objek) {
+        int count = 0;
+        for (Objek o : objects) {
+            if (o.equals(objek)) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
 }
