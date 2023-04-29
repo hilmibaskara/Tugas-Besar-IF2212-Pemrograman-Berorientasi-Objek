@@ -1,4 +1,5 @@
 import Objek.Objek;
+import Objek.ObjekNonMakanan.*;
 import java.util.ArrayList;
 
 public class Ruangan {
