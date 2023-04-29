@@ -54,11 +54,18 @@ public class Inventory {
         setCapacity(getCapacity() + 1);
     }
 
-    public void printInventory(){
-        System.out.println("Inventory milik " + getOwner().getNamaLengkap() + ":");
-        for (int i = 0; i < objects.size(); i++) {
-            Objek objek = objects.get(i);
-            System.out.println((i+1)+ ". " + objek.getNama());
+    public void printInventory() {
+        System.out.println("Inventory milik " + getOwner() + ":");
+        Map<Objek, Integer> objekCountMap = new HashMap<>();
+        for (Objek objek : objects) {
+            objekCountMap.put(objek, objekCountMap.getOrDefault(objek, 0) + 1);
+        }
+        int i = 1;
+        for (Map.Entry<Objek, Integer> entry : objekCountMap.entrySet()) {
+            Objek objek = entry.getKey();
+            int amount = entry.getValue();
+            System.out.println(i + ". " + objek.getNama() + " (" + amount + ")");
+            i++;
         }
     }
 
