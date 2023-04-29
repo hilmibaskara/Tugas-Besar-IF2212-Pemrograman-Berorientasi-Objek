@@ -1,15 +1,12 @@
-package Rumah;
-
 import java.util.ArrayList;
-import Ruangan.Ruangan;
 
 public class Rumah {
-    private String name;
+    private String namaOwner;
     private Point houseLoc;
     private ArrayList<Ruangan> ruanganList;
 
     public Rumah(int x, int y) {
-        this.addRuangan();
+        // this.tambahRuangan("kamar");
         this.setHouseLoc(x, y);
         this.ruanganList = new ArrayList<Ruangan>();
     }    
@@ -18,8 +15,8 @@ public class Rumah {
         houseLoc.setPoint(x, y);
     }
 
-    public String getRumahName() {
-        return this.name;
+    public String getNamaOwner() {
+        return this.namaOwner;
     }
     public Point getRumahLoc() {
         return this.houseLoc;
@@ -31,7 +28,7 @@ public class Rumah {
         return this.houseLoc.getY();
     }
 
-    public void addRuangan() {
-
-    } 
+    public void tambahRuangan(String namaRuangan) {
+        ruanganList.add(new Ruangan(namaRuangan, null, null, null, null));
+    }
 }
