@@ -5,10 +5,11 @@ public class Rumah {
     private Point houseLoc;
     private ArrayList<Ruangan> ruanganList;
 
-    public Rumah(int x, int y) {
+    public Rumah(int x, int y, String namaOwner) {
         // this.tambahRuangan("kamar");
         this.setHouseLoc(x, y);
         this.ruanganList = new ArrayList<Ruangan>();
+        this.namaOwner = namaOwner;
     }    
 
     public void setHouseLoc(int x, int y) {
