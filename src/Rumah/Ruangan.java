@@ -74,6 +74,7 @@ public class Ruangan {
                     objectTile[i][j] = obj;
                 }
             }
+            daftarObjek.add(obj);
         }
     }
 
@@ -84,6 +85,7 @@ public class Ruangan {
                 objectTile[i][j] = null;
             }
         }
+        daftarObjek.remove(obj);
     }
 
     // method buat mindahin objek di dalam ruangan.
