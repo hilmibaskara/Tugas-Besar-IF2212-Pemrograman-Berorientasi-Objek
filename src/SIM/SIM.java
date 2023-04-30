@@ -1,10 +1,10 @@
 package SIM;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.time.Duration;
+import java.time.*;
+import java.util.*;
+import Objek.Objek;
+import Ruangan.Ruangan;
+import Rumah.Rumah;
 
 public class SIM {
     private String namaLengkap;
@@ -20,7 +20,7 @@ public class SIM {
     private LocalDate waktuPenggantianPekerjaan;
     private Rumah locRumahSim;
     private Ruangan locRuangSim;
-    private ObjekNonMakanan currentobj;
+    private String currentobj;
 
     public SIM(String namaLengkap){
         this.namaLengkap = namaLengkap;
@@ -114,6 +114,30 @@ public class SIM {
         this.status = status;
     }
 
+    public Rumah getLocRumahSim(){
+        return this.locRumahSim;
+    }
+
+    public void setLocRumahSim(Rumah namaRumah){
+        this.locRumahSim = namaRumah;
+    }
+
+    public Ruang getLocRuanganSim(){
+        return this.locRuanganSim;
+    }
+
+    public void setLocRuanganSim(Ruang namaRuangan){
+        this.locRuangSim = namaRuangan;
+    }
+
+    public String getBarang(){
+        return this.currentobj;
+    }
+
+    public void setBarang(String namaBarang){
+        this.currentobj = namaBarang;
+    }
+
     //implementasi menghitung waktu bekerja
     private int getDurasiBekerja() {
         if (waktuMulaiBekerja == null) {
@@ -158,37 +182,21 @@ public class SIM {
     }
 
     //implementasi aksi upgrade rumah
-    public void upgradeRumah(String posisi, String ruangAcuan, String namaRuanganbaru){
+    public void upgradeRumah(Ruangan namaRuanganbaru, Ruangan ruangAcuan, String posisi){
         if (uang >= 1500) { // cek apakah uang sim mencukupi untuk upgrade rumah
-            if (getRuangan().size() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
-                if (!getRuangan().contains(ruangAcuan)) { // cek apakah ruang acuan yang dipilih ada di daftar ruangan sim
-                    System.out.println("Ruang acuan yang dipilih tidak ditemukan.");
+            if (locRumahSim.getDaftarRuangan() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
+                if (namaRuanganbaru.equals(ruangAcuan)) { // cek apakah ruang acuan yang dipilih ada di daftar ruangan sim
+                    System.out.println("Pilih nama ruangan yang lain.");
                     return;
                 }
             }
             // Menambah ruangan baru
-            Ruangan ruanganBaru = new Ruangan(namaRuanganbaru);
-            switch (posisi.toLowerCase()) {
-                case "atas":
-                    ruanganBaru.setPosisi(getRuangan().get(ruangAcuan).getX(), getRuangan().get(ruangAcuan).getY() - 1);
-                    break;
-                case "bawah":
-                    ruanganBaru.setPosisi(getRuangan().get(ruangAcuan).getX(), getRuangan().get(ruangAcuan).getY() + 1);
-                    break;
-                case "kiri":
-                    ruanganBaru.setPosisi(getRuangan().get(ruangAcuan).getX() - 1, getRuangan().get(ruangAcuan).getY());
-                    break;
-                case "kanan":
-                    ruanganBaru.setPosisi(getRuangan().get(ruangAcuan).getX() + 1, getRuangan().get(ruangAcuan).getY());
-                    break;
-                default:
-                    System.out.println("Posisi yang dimasukkan tidak valid.");
-                    return;
-            }
+            Ruangan namaRuanganbaru = new Ruangan(namaRuanganbaru)
+            locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
             uang -= 1500;
 
             // Memulai thread untuk waktu pembangunan rumah
-            Thread t = new Thread(new Runnable() {
+            Thread t = new Thread(new Runnable() {  
                 public void run() {
                     synchronized(this){
                         try {
@@ -325,8 +333,8 @@ public class SIM {
             System.out.println("Maaf, tidak terdapat KasurSingle di ruangan ini.");
             return;
         }
-        if (status.equals("idle") && currentobj.equals(ObjekNonMakanan objek)) ) {
-            if(durasiTidur % 60 == 0){
+        if (status.equals("idle") && currentobj.equals("KasurKingSize")) {
+            if(currentobj.equals("KasurKingSize") || currentobj.equals("KasurQueenSize") || currentobj.equals("KasurSingle")){
                 status = "tidur";
                 synchronized (this) {
                     notify();
@@ -357,8 +365,6 @@ public class SIM {
                     }
                 });
                 t.start();
-            }else{
-                System.out.println("Durasi tidur harus dalam detik.");
             }
         }
     }
@@ -377,7 +383,7 @@ public class SIM {
             System.out.println("Maaf, tidak terdapat meja dan kursi di ruangan ini.");
             return;
         }
-        if (status.equals("idle")) {
+        if (status.equals("idle") && currentobj.equals("MejadanKursi")) {
             status = "makan";
             synchronized (this) {
                 notify();
@@ -432,7 +438,7 @@ public class SIM {
             }
         }
         // Jika semua bahan tersedia, maka mulai memasak
-        if (bahanTersedia) {
+        if (bahanTersedia && currentobj.equals("komporgas") || currentobj.equals("koporlistrik")) {
             if (status.equals("idle")) {
                 status = "masak";
                 synchronized (this) {
@@ -505,7 +511,7 @@ public class SIM {
             System.out.println("Maaf, tidak terdapat toilet di ruangan ini.");
             return;
         }
-        if (status.equals("idle")) {
+        if (status.equals("idle") && currentobj.equals("Toilet")) {
             status = "BuangAir";
             synchronized (this) {
                 notify();
@@ -536,44 +542,14 @@ public class SIM {
     
     //implementasi aksi memasang barang
     public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
-        int[][] ruangan = getRuangan(); // Mendapatkan layout rumah
-        boolean overlap = false;
-        int hargaBarang = namaBarang.getHarga();
-        int panjangBarang = namaBarang.getPanjang();
-        int lebarBarang = namaBarang.getLebar();
-        // Mengecek apakah posisi yang dipilih sudah ada barang di sana
-        for (int i = x; i < x+panjangBarang; i++) {
-            for (int j = y; j < y+lebarBarang; j++) {
-                if (ruangan[i][j] != 0) {
-                    overlap = true;
-                    break;
-                }
-            }
-        }
-        
-        if (overlap) {
-            System.out.println("Tidak bisa memasang barang di posisi yang dipilih, posisi sudah terisi.");
-            break;
-        } else {
-            ObjekNonMakanan barangBaru = new ObjekNonMakanan(namaBarang, panjangBarang, lebarBarang, hargaBarang);
-            // Menambahkan barang ke list barang yang dimiliki oleh pemain
-            namaBarang.addObject(barangBaru);
-            
-            // Memasang barang pada layout rumah
-            for (int i = x; i < x+panjangBarang; i++) {
-                for (int j = y; j < y+lebarBarang; j++) {
-                    ruangan[i][j] = namaBarang.indexOf(barangBaru) + 1; // Menandai ruang yang dipakai oleh barang pada layout rumah
-                }
-            }
-            System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
-        }
+        locRuangSim.tambahObjek(namaBarang, x, y);
+        System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
     }
 
     //implementasi aksi berpindah ruangan
     public void berpindahRuangan(Ruangan namaRuangan) {
         // Perbarui lokasi SIM dengan lokasi ruangan yang dituju
         this.locRuangSim = namaRuangan;
-    
         System.out.println("Berhasil pindah ke " + namaRuangan.getNamaRuangan());
     }
     
@@ -587,7 +563,7 @@ public class SIM {
                 break;
             }
         }
-        if (!jamTersedia) {
+        if (!jamTersedia && currentobj.equals("Jam")) {
             System.out.println("Maaf, tidak terdapat jam di ruangan ini.");
             return;
         }
