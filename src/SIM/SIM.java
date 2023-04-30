@@ -17,6 +17,7 @@ public class SIM {
     private String status;
     private Time currentTime;
     private LocalDateTime waktuMulaiBekerja;
+    private LocalDateTime waktuMakanTerakhir;
     private LocalDate waktuPenggantianPekerjaan;
     private Rumah locRumahSim;
     private Ruangan locRuangSim;
@@ -29,6 +30,7 @@ public class SIM {
         this.mood = 80;
         this.kesehatan = 80;
         this.status = "idle";
+
         int randomJob = (int) (Math.random() * 5) + 1;
         switch (randomJob) {
             case 1:
@@ -50,6 +52,7 @@ public class SIM {
                 break;
         }
     }
+
     public String getNamaLengkap() {
         return this.namaLengkap;
     }
@@ -191,7 +194,7 @@ public class SIM {
                 }
             }
             // Menambah ruangan baru
-            Ruangan namaRuanganbaru = new Ruangan(namaRuanganbaru)
+            Ruangan namaRuanganbaru = new Ruangan(namaRuanganbaru);
             locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
             uang -= 1500;
 
@@ -333,7 +336,7 @@ public class SIM {
             System.out.println("Maaf, tidak terdapat KasurSingle di ruangan ini.");
             return;
         }
-        if (status.equals("idle") && currentobj.equals("KasurKingSize")) {
+        if (status.equals("idle")) {
             if(currentobj.equals("KasurKingSize") || currentobj.equals("KasurQueenSize") || currentobj.equals("KasurSingle")){
                 status = "tidur";
                 synchronized (this) {
@@ -410,6 +413,13 @@ public class SIM {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                    }
+                    // Setelah makan selesai, cek durasi sejak selesai makan sampai buang air
+                    long durasiMakan = System.currentTimeMillis()/1000 - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
+                    if (durasiMakan > 240) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
+                        int kurang = (int) (durasiMakan / 240); // Hitung berapa kali kurang dalam interval 4 menit
+                        mood -= 5 * kurang;
+                        kesehatan -= 5 * kurang;
                     }
                     status = "idle";
                 }
@@ -531,15 +541,27 @@ public class SIM {
             }
             Thread t = new Thread(new Runnable() {
                 public void run() {
+                    int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
+                    int counter = 0;
                     while (status.equals("BuangAir")){
-                        if(kekenyangan > 0){
+                        if (counter % 10 == 0) { // Setiap 10 detik, kekenyangan berkurang
                             kekenyangan -= 20;
                             mood += 10;
+                            counter = 0;
                         }
-                        else{
-                            kesehatan -= 5;
-                            mood -= 5;
+                        counter++;
+                        try {
+                            Thread.sleep(waktuBuangAir * 1000); // Tunggu 10 detik
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
+                    }
+                    // Setelah buang air selesai, cek durasi sejak selesai makan sampai buang air
+                    long durasiMakanDanBuangAir = System.currentTimeMillis() - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
+                    if (durasiMakanDanBuangAir > 240000) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
+                        int kurang = (int) (durasiMakanDanBuangAir / 240000); // Hitung berapa kali kurang dalam interval 4 menit
+                        mood -= 5 * kurang;
+                        kesehatan -= 5 * kurang;
                     }
                     status = "idle";
                 }
@@ -555,6 +577,7 @@ public class SIM {
     
     //implementasi aksi memasang barang
     public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
+        //menambahkan objek
         locRuangSim.tambahObjek(namaBarang, x, y);
         System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
     }
@@ -775,4 +798,3 @@ public class SIM {
         }
     }
 }
-
