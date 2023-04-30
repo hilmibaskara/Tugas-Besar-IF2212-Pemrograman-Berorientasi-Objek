@@ -8,6 +8,7 @@ public class Ruangan {
     private static final int width = 6;
     private static final int length = 6;
 
+    private Point ruanganLoc;
     private String nama;
     private Objek[][] objectTile;
 
@@ -19,14 +20,16 @@ public class Ruangan {
     private Ruangan ruanganKiri;
 
     // constructor
-    public Ruangan(String nama, Ruangan atas, Ruangan bawah, Ruangan kanan, Ruangan kiri) {
+    public Ruangan(String nama) {
         this.nama = nama;
         objectTile = new Objek[width][length];
 
-        ruanganAtas = atas;
-        ruanganBawah = bawah;
-        ruanganKanan = kanan;
-        ruanganKiri = kiri;
+        // nilai default untuk lokasinya (0,0) & ruangan di sisi-sisinya 0 semua
+        ruanganLoc = new Point(0,0);
+        ruanganAtas = null;
+        ruanganBawah = null;
+        ruanganKanan = null;
+        ruanganKiri = null;
     }
 
     // getter nama ruangan
@@ -98,7 +101,7 @@ public class Ruangan {
     }
 
     // method buat ngedisplay denah ruangan
-    public void display() {
+    public void displayRuangan() {
         for (int y = 0; y < length; y++) {
             for (int x = 0; x < width; x++) {
                 Objek obj = objectTile[x][y];
@@ -121,10 +124,10 @@ public class Ruangan {
         return this.ruanganBawah;
     }
     public Ruangan getRuanganKiri() {
-        return this.ruanganKanan;
+        return this.ruanganKiri;
     }
     public Ruangan getRuanganKanan() {
-        return this.ruanganKiri;
+        return this.ruanganKanan;
     }
 
     // setter sisi ruangan
@@ -145,6 +148,30 @@ public class Ruangan {
         ruanganBawah = bawah;
         ruanganKanan = kanan;
         ruanganKiri = kiri;
+    }
+
+    public Point getRuanganLoc() {
+        return this.ruanganLoc;
+    }
+
+    public int getRuanganLocX() {
+        return this.ruanganLoc.getX();
+    }
+
+    public int getRuanganLocY() {
+        return this.ruanganLoc.getY();
+    }
+
+    public void setRuanganLocX(int x) {
+        this.ruanganLoc.setX(x);
+    }
+
+    public void setRuanganLocY(int y) {
+        this.ruanganLoc.setY(y);
+    }
+
+    public void setRuanganLoc(int x, int y) {
+        this.ruanganLoc = new Point(x, y);
     }
 
     // buat bantu display ruangan
