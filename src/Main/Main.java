@@ -216,6 +216,7 @@ public class Main {
                                 System.out.println("command salah");
                                 break;
                         }
+                        }
                     }
                     else{
                         System.out.println("permainan belum dimulai atau SIM tidak berada di ruangan");
@@ -653,12 +654,13 @@ public class Main {
                         System.out.println("permainan belum dimulai atau SIM tidak berada di ruangan");
                     }
                     break;
-                }
+                
                 default:
                     System.out.println("command salah");
                     System.out.println("ketik \"help\" untuk melihat list command");
-                    break;      
-        }
+                    break;  
+            }
+        
         }
     }
 }
