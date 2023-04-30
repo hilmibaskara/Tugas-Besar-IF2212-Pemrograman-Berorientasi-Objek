@@ -5,9 +5,11 @@ public class Main {
         boolean ingame = false;
         boolean status = false;
         ArrayList<SIM> sims = new ArrayList<>();
-        SIM sim;
-        Rumah rumah;
-        World dunia;
+        ArrayList<Inventory> inventorylist = new ArrayList<>();
+        SIM sim = new SIM("dummy");
+        Inventory inventory = new Inventory(sim);
+        Rumah rumah = new Rumah(0, 0, "dummy");
+        World dunia = new World(64, 64);
         int count = 0;
         while (!status) {
             System.out.printf("masukkan command: ");
@@ -29,8 +31,8 @@ public class Main {
                         System.out.printf("masukkan nama lengkap SIM: ");
                         String nama = scan.nextLine();
                         sim = new SIM(nama);
-                        int locX;
-                        int locY;
+                        int locX = 0;
+                        int locY = 0;
                         for (int x = 0; x < 64; x++) {
                             for (int y = 0; y < 64; y++) {
                                 if (!dunia.getObject(x,y)){
@@ -44,18 +46,19 @@ public class Main {
                         rumah= new Rumah(locX,locY,sim.getNamaLengkap());
                         dunia.addRumah(rumah);
                         sim.setLocRuanganSim(rumah.getKamar());
-                        sim.setlocRumahSim(rumah);
+                        sim.setLocRumahSim(rumah);
                         sim.setBarang("-");
+                        inventory = new Inventory(sim);
                         KasurSingle kasur = new KasurSingle();
                         KomporGas kompor = new KomporGas();
                         Toilet toilet = new Toilet();
                         MejaDanKursi mejakursi = new MejaDanKursi();
                         Jam jam = new Jam();
-                        sim.pasangBarang(kasur,0,0);
-                        sim.pasangBarang(kompor,0,5);
-                        sim.pasangBarang(toilet,5,5);
-                        sim.pasangBarang(mejakursi,1,2);
-                        sim.pasangBarang(jam,3,5);
+                        sim.pasangBarang(kasur,1,1);
+                        sim.pasangBarang(kompor,1,6);
+                        sim.pasangBarang(toilet,6,6);
+                        sim.pasangBarang(mejakursi,2,3);
+                        sim.pasangBarang(jam,4,6);
                     }
                     else{
                         System.out.println("game sudah dimulai");
@@ -99,7 +102,7 @@ public class Main {
                 case "current loc":
                     if (ingame){
                         System.out.println("lokasi sekarang");
-                        System.out.printf("rumah : rumah " + sim.getLocRumahSim().getNameOwner());
+                        System.out.printf("rumah : rumah " + sim.getLocRumahSim().getNamaOwner());
                         System.out.println("");
                         System.out.printf("ruangan : " + sim.getLocRuanganSim().getNamaRuangan());
                         System.out.println("");
@@ -118,25 +121,33 @@ public class Main {
                     break;
                 case "upgrade house":
                     if (ingame && sim.getStatus().equals("idle")){
-                        System.out.println("Masukkan posisi ruangan yang akan dibuat: ");
-                        String posisi = scan.nextLine();
-                        System.out.println("Masukkan ruangan acuan: ");
-                        String ruangAcuan = scan.nextLine();
-                        System.out.println("Masukkan nama ruangan baru: ");
-                        String namaRuanganbaru = scan.nextLine();
-                        sim.upgradeRumah(posisi,ruangAcuan,namaRuanganbaru);
+                        rumah.displayRumah();
+                        System.out.printf("Masukkan ruangan acuan: ");
+                        int ruangAcuan = scan.nextInt();
+                        if (ruangAcuan>0 && ruangAcuan<=rumah.getDaftarRuangan().size()){
+                            System.out.println("Masukkan posisi ruangan yang akan dibuat: ");
+                            String posisi = scan.nextLine();
+                            System.out.println("Masukkan nama ruangan baru: ");
+                            String namaRuanganbaru = scan.nextLine();
+                            Ruangan acuan = rumah.getDaftarRuangan().get(ruangAcuan-1);
+                            Ruangan ruanganbaru = new Ruangan(namaRuanganbaru);
+                            sim.upgradeRumah(ruanganbaru, acuan, posisi);
+                        }
+                        else{
+                            System.out.println("command salah");
+                        }
                     }
                     else{
                         System.out.println("permainan belum dimulai atau SIM tidak berada di rumah");
                     }
-                    break;
+                break;
                 case "move room":
                     if (ingame && sim.getStatus().equals("idle")){
                         System.out.println("list ruangan");
                         rumah.displayRumah();
                         int noruangan = scan.nextInt();
                         System.out.printf("masukkan nomor ruangan : ");
-                        if(noruangan<=rumah.getDaftarRuangan() && noruangan>0){
+                        if(noruangan<=rumah.getDaftarRuangan().size() && noruangan>0){
                             sim.setLocRuanganSim(rumah.getDaftarRuangan().get(noruangan-1));
                         }
                     }
@@ -182,7 +193,7 @@ public class Main {
                                         break;
                                     case "5":
                                         KomporGas komporgas = new KomporGas();
-                                        sim.buyObjek(kompor);
+                                        sim.buyObjek(komporgas);
                                         break;
                                     case "6":
                                         KomporListrik komporlistrik = new KomporListrik();
@@ -197,7 +208,8 @@ public class Main {
                                         sim.buyObjek(jam);
                                         break;
                                     default:
-                                    System.out.println("command salah");
+                                        System.out.println("command salah");
+                                }
                                 break;
                             case 2 :
                                 sim.getLocRuanganSim().displayRuangan();
@@ -210,14 +222,13 @@ public class Main {
                                     int ybaru = scan.nextInt();
                                     sim.getLocRuanganSim().pindahObjek(sim.getLocRuanganSim().getDaftarObjek().get(pindahbarang-1),xbaru,ybaru);
                                 }
-                                sim.getLocRuanganSim().pindahObjek(); 
                                 break;
                             default:
                                 System.out.println("command salah");
                                 break;
                         }
-                        }
                     }
+                    
                     else{
                         System.out.println("permainan belum dimulai atau SIM tidak berada di ruangan");
                     }
@@ -239,21 +250,25 @@ public class Main {
                         if (dunia.sisaLahan()==0){
                             System.out.println("Tidak ada lahan yang tersisa");
                         }
+                        int locX = 0;
+                        int locY = 0;
                         if (ada == 0 && dunia.sisaLahan()>0){
                             for (int x = 0; x < 64; x++) {
                                 for (int y = 0; y < 64; y++) {
                                     if (!dunia.getObject(x,y)){
-                                        int locX = x;
-                                        int locY = y;
+                                        locX = x;
+                                        locY = y;
                                         dunia.setObject(x,y,true);
                                         break;
                                     }
                                 }
                             }
-                            SIM simbaru = new SIM(nama);
+                            SIM simbaru = new SIM(command);
                             sims.add(simbaru);
                             Rumah rumahbaru= new Rumah(locX,locY,command);
                             dunia.addRumah(rumahbaru);
+                            Inventory inventorybaru = new Inventory(simbaru);
+                            inventorylist.add(inventorybaru);
                             System.out.println("SIM berhasil ditambahkan");
                         }
                     }
@@ -270,8 +285,9 @@ public class Main {
                         System.out.print("Pilih nomor Sim yang ingin dimainkan: ");
                         int input = scan.nextInt();
                         if (input > 0 && input <= sims.size()) {
-                            SIM sim = sims.get(input-1);
+                            sim = sims.get(input-1);
                             rumah = dunia.getRumah().get(input-1);
+                            inventory = inventorylist.get(input-1);
                             System.out.println("Anda sekarang bermain sebagai Sim " + sim.getNamaLengkap());
                         }
                         else{
@@ -396,7 +412,7 @@ public class Main {
                                         break;
                                     case "5":
                                         KomporGas komporgas = new KomporGas();
-                                        sim.buyObjek(kompor);
+                                        sim.buyObjek(komporgas);
                                         break;
                                     case "6":
                                         KomporListrik komporlistrik = new KomporListrik();
@@ -435,8 +451,8 @@ public class Main {
                                         sim.buyObjek(bayam);
                                         break;
                                     case "15":
-                                        Kentang kentang = new Kentang();
-                                        sim.buyObjek(kentang);
+                                        Kacang kacang = new Kacang();
+                                        sim.buyObjek(kacang);
                                         break;
                                     case "16":
                                         Susu susu = new Susu();
@@ -537,8 +553,8 @@ public class Main {
                                             sim.makan(bayam);
                                             break;
                                         case "7":
-                                            Kentang kentang = new Kentang();
-                                            sim.makan(kentang);
+                                            Kacang kacang = new Kacang();
+                                            sim.makan(kacang);
                                             break;
                                         case "8":
                                             Susu susu = new Susu();
@@ -607,7 +623,7 @@ public class Main {
                                 case "berkunjung":
                                     dunia.printListRumah();
                                     System.out.printf("masukkan nomor rumah yang dipilih: ");
-                                    String tujuan = scan.nextInt();
+                                    int tujuan = scan.nextInt();
                                     int x1,x2,y1,y2;
                                     Rumah rumahtujuan = dunia.getRumah().get(tujuan-1);
                                     x1 = rumah.getHouseLocX();
@@ -654,7 +670,7 @@ public class Main {
                                             break;
                                         case "5":
                                             KomporGas komporgas = new KomporGas();
-                                            sim.pasangBarang(kompor,xpasang,ypasang);
+                                            sim.pasangBarang(komporgas,xpasang,ypasang);
                                             break;
                                         case "6":
                                             KomporListrik komporlistrik = new KomporListrik();
@@ -666,7 +682,7 @@ public class Main {
                                             break;
                                         case "8":
                                             Jam jam = new Jam();
-                                            sim.pasangBarang(jam);
+                                            sim.pasangBarang(jam,xpasang,ypasang);
                                             break; 
                                         default:
                                             System.out.println("command salah");
