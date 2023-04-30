@@ -312,7 +312,7 @@ public class Main {
                     if (ingame && sim.getStatus().equals("idle")){
                         System.out.println("list objek");
                         sim.getLocRuanganSim().printListObjekRuangan();
-                        System.out.println("masukkan no objek yang ingin dituju");
+                        System.out.printf("masukkan no objek yang ingin dituju :");
                         int objektujuan = scan.nextInt();
                         if (objektujuan > 0 && objektujuan <= sim.getLocRuanganSim().getDaftarObjek().size()){
                             if(sim.getLocRuanganSim().getDaftarObjek().get(objektujuan-1) instanceof KasurSingle){
