@@ -370,7 +370,7 @@ public class SIM {
     }
     
     //implementasi aksi makan
-    public void makan(ObjekMakanan makanan){
+    public void makan(ObjekMakanan makanan) {
         // Cek keberadaan meja dan kursi
         boolean mejakursiTersedia = false;
         for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
@@ -390,13 +390,25 @@ public class SIM {
             }
             Thread t = new Thread(new Runnable() {
                 public void run() {
-                    while (status.equals("makan")){
-                        if(inventory.contains(makanan)){
-                            inventory.removeObject(makanan);
+                    int waktuMakan = (int) (Math.random() * 31) + 30; // Lama waktu makan secara random antara 30-60 detik
+                    int counter = 0;
+                    while (status.equals("makan")) {
+                        if (counter == waktuMakan) { // Setiap 30 detik, kekenyangan bertambah
                             kekenyangan += makanan.getKekenyangan();
+                            counter = 0;
                         }
-                        else{
+                        if (inventory.contains(makanan)) {
+                            inventory.removeObject(makanan);
+                        } else {
                             System.out.println("Tidak ada makanan tersebut di inventory.");
+                            status = "idle";
+                            return;
+                        }
+                        counter++;
+                        try {
+                            Thread.sleep(waktuMakan * 1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
                     status = "idle";
@@ -405,6 +417,7 @@ public class SIM {
             t.start();
         }
     }
+    
 
     public void masak(Masakan menu) {
         // Cek keberadaan kompor
