@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.Duration;
 
-public class SIM<locRuangSim> {
+public class SIM {
     private String namaLengkap;
     private Job pekerjaan;
     private int uang;
