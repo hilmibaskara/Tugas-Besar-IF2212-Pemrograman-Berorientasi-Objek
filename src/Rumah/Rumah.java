@@ -44,7 +44,7 @@ public class Rumah {
         return this.ruanganList;
     }
 
-    // variabel ruangBarunya bikin dulu, terus null-in dulu sisi-sisi ruangannya. baru di-add pake ini.
+    // variabel ruangBarunya bikin dulu
     // kalo ngaco kabarin yey
     public void pasangRuanganBaru(Ruangan ruangBaru, Ruangan ruangAcuan, String arahMataPosisi) {
         if (arahMataPosisi.equals("atas")) {
