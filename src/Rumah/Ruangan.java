@@ -41,6 +41,13 @@ public class Ruangan {
     public ArrayList<Objek> getDaftarObjek() {
         return daftarObjek;
     }
+    
+    public void printListRuangan(){
+        System.out.println("daftar ruangan");
+        for (int i = 0; i < daftarObjek.size(); i++) {
+            System.out.println((i+1) + ". " + daftarObjek.get(i));
+        }
+    }
 
     // method nambah objek, x & y merupakan koordinat paling kiri atas
     public void tambahObjek(ObjekNonMakanan obj, int x, int y) {
