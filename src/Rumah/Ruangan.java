@@ -42,7 +42,7 @@ public class Ruangan {
         return daftarObjek;
     }
     
-    public void printListRuangan(){
+    public void printListObjekRuangan(){
         System.out.println("daftar ruangan");
         for (int i = 0; i < daftarObjek.size(); i++) {
             System.out.println((i+1) + ". " + daftarObjek.get(i));
