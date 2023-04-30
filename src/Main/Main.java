@@ -620,6 +620,58 @@ public class Main {
                                     sim.buangAir();
                                     break;
                                 case "pasang barang":
+                                    System.out.println("list barang");
+                                    System.out.println("1. kasur single ");
+                                    System.out.println("2. kasur queen size ");
+                                    System.out.println("3. kasur king size ");
+                                    System.out.println("4. toilet ");
+                                    System.out.println("5. kompor gas ");
+                                    System.out.println("6. kompor listrik ");
+                                    System.out.println("7. meja dan kursi ");
+                                    System.out.println("8. jam ");
+                                    System.out.printf("masukkan nomor pilihan: ");
+                                    String pasang = scan.nextLine();
+                                    System.out.printf("masukkan koordinat x: ");
+                                    int xpasang = scan.nextInt();
+                                    System.out.printf("masukkan koordinat y: ");
+                                    int ypasang = scan.nextInt();
+                                    switch (pasang){
+                                        case "1":
+                                            KasurSingle kasursingle = new KasurSingle();
+                                            sim.pasangBarang(kasursingle,xpasang,ypasang);
+                                            break;
+                                        case "2":
+                                            KasurQueenSize kasurqueen = new KasurQueenSize();
+                                            sim.pasangBarang(kasurqueen,xpasang,ypasang);
+                                            break;
+                                        case "3":
+                                            KasurKingSize kasurking = new KasurKingSize();
+                                            sim.pasangBarang(kasurking,xpasang,ypasang);
+                                            break;
+                                        case "4":
+                                            Toilet toilet = new Toilet();
+                                            sim.pasangBarang(toilet,xpasang,ypasang);
+                                            break;
+                                        case "5":
+                                            KomporGas komporgas = new KomporGas();
+                                            sim.pasangBarang(kompor,xpasang,ypasang);
+                                            break;
+                                        case "6":
+                                            KomporListrik komporlistrik = new KomporListrik();
+                                            sim.pasangBarang(komporlistrik,xpasang,ypasang);
+                                            break;
+                                        case "7":
+                                            MejaDanKursi mejakursi = new MejaDanKursi();
+                                            sim.pasangBarang(mejakursi,xpasang,ypasang);
+                                            break;
+                                        case "8":
+                                            Jam jam = new Jam();
+                                            sim.pasangBarang(jam);
+                                            break; 
+                                        default:
+                                            System.out.println("command salah");
+                                            break;
+                                    }
                                     break;
                                 case "melihat waktu":
                                     sim.melihatWaktu();
@@ -646,8 +698,7 @@ public class Main {
                                     sim.mandi();
                                     break;
                                 default:
-                                    System.out.println("command salah");
-                                    break;
+                                    
                             }
                     }
                     else{
