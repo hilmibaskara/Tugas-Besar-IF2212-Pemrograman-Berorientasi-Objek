@@ -20,7 +20,14 @@ public class World {
     }
 
     public List<Rumah> getRumah(){
-        return this.listRumah;
+        return listRumah;
+    }
+
+    public void printListRumah(){
+        System.out.println("daftar rumah");
+        for (int i = 0; i < listRumah.size(); i++) {
+            System.out.println((i+1) + ". " + listRumah.get(i) + listRumah.get(i).getNamaOwner());
+        }
     }
     
     public int sisaLahan(){
