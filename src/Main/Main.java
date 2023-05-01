@@ -31,6 +31,7 @@ public class Main {
                         System.out.printf("masukkan nama lengkap SIM: ");
                         String nama = scan.nextLine();
                         sim = new SIM(nama);
+                        sims.add(sim);
                         int locX = 0;
                         int locY = 0;
                         for (int x = 0; x < 64; x++) {
@@ -49,6 +50,7 @@ public class Main {
                         sim.setLocRumahSim(rumah);
                         sim.setBarang("-");
                         inventory = new Inventory(sim);
+                        inventorylist.add(inventory);
                         KasurSingle kasur = new KasurSingle();
                         KomporGas kompor = new KomporGas();
                         Toilet toilet = new Toilet();
@@ -298,6 +300,7 @@ public class Main {
                         else{
                             System.out.println("command salah");
                         }
+                        scan.nextLine();
                     }
                     else{
                         System.out.println("permainan belum dimulai");
@@ -697,4 +700,5 @@ public class Main {
         }
     }
 }
+
 
