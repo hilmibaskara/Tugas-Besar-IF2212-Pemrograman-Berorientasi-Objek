@@ -579,7 +579,7 @@ public class SIM {
     public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
         //menambahkan objek
         locRuangSim.tambahObjek(namaBarang, x, y);
-        System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
+        System.out.println("Barang " + namaBarang.getNama() + " telah dipasang pada posisi " + x + "," + y);
     }
 
     //implementasi aksi berpindah ruangan
