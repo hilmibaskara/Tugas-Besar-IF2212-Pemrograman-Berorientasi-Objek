@@ -125,9 +125,11 @@ public class Rumah {
     }
 
     public void displayRumah() {
-        for (Ruangan i: ruanganList) {
-            System.out.printf(i.getNamaRuangan());
-            System.out.printf("(" + i.getRuanganLocX() + "," + i.getRuanganLocY() + ")");
+        int a = 1;
+        for (Ruangan i: ruanganList) {          
+            System.out.printf(a +". "+ i.getNamaRuangan());
+            System.out.println("(" + i.getRuanganLocX() + "," + i.getRuanganLocY() + ")");
+            a++;
         }
     }
 }
