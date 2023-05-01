@@ -6,6 +6,10 @@ import Objek.Objek;
 import Ruangan.Ruangan;
 import Rumah.Rumah;
 
+import java.time.*;
+import java.util.*;
+import java.lang.*;
+
 public class SIM {
     private String namaLengkap;
     private Job pekerjaan;
@@ -30,7 +34,6 @@ public class SIM {
         this.mood = 80;
         this.kesehatan = 80;
         this.status = "idle";
-
         int randomJob = (int) (Math.random() * 5) + 1;
         switch (randomJob) {
             case 1:
@@ -125,11 +128,11 @@ public class SIM {
         this.locRumahSim = namaRumah;
     }
 
-    public Ruang getLocRuanganSim(){
-        return this.locRuanganSim;
+    public Ruangan getLocRuanganSim(){
+        return this.locRuangSim;
     }
 
-    public void setLocRuanganSim(Ruang namaRuangan){
+    public void setLocRuanganSim(Ruangan namaRuangan){
         this.locRuangSim = namaRuangan;
     }
 
@@ -153,7 +156,7 @@ public class SIM {
     }
 
     //implementasi aksi membeli objek
-    public void buyObjek(Objek barang){
+    public void buyObjek(Objek barang) {
         int hargaBarang = barang.getHarga();
         if (uang >= hargaBarang) {
             // Kurangi uang sesuai harga barang
@@ -187,36 +190,28 @@ public class SIM {
     //implementasi aksi upgrade rumah
     public void upgradeRumah(Ruangan namaRuanganbaru, Ruangan ruangAcuan, String posisi){
         if (uang >= 1500) { // cek apakah uang sim mencukupi untuk upgrade rumah
-            if (locRumahSim.getDaftarRuangan() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
+            if (locRumahSim.getDaftarRuangan().size() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
                 if (namaRuanganbaru.equals(ruangAcuan)) { // cek apakah ruang acuan yang dipilih ada di daftar ruangan sim
                     System.out.println("Pilih nama ruangan yang lain.");
                     return;
                 }
             }
             // Menambah ruangan baru
-            Ruangan namaRuanganbaru = new Ruangan(namaRuanganbaru);
             locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
             uang -= 1500;
-
-            // Memulai thread untuk waktu pembangunan rumah
-            Thread t = new Thread(new Runnable() {  
-                public void run() {
-                    synchronized(this){
-                        try {
-                            if (status.equals("idle")) {
-                                wait();
-                            }
-                            Thread.sleep(18 * 60 * 1000); // 18 menit
-                            System.out.println("Upgrade rumah selesai.");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            synchronized(this){
+                try {
+                    if (status.equals("idle")) {
+                        wait();
                     }
+                    Thread.sleep(18 * 60 * 1000); // 18 menit
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
-            t.start();
-            
-            System.out.println("Upgrade rumah sedang dalam proses pembangunan.");
+                finally{
+                    status = "idle";   
+                }
+            }      
         } else {
             System.out.println("Uang sim tidak mencukupi untuk upgrade rumah.");
         }
@@ -240,7 +235,7 @@ public class SIM {
     }
 
     //implementasi aksi kerja
-    public void kerja(int durasi) {
+    public void kerja(int durasi)  {
         if (status.equals("idle")) {
             if (durasi % 120 == 0) { // validasi kelipatan 120 detik
                 if (waktuMulaiBekerja == null || Duration.between(waktuPenggantianPekerjaan, LocalDateTime.now()).toSeconds() >= 720) { // jika belum pernah bekerja pada pekerjaan ini atau sudah 12 menit setelah penggantian pekerjaan
@@ -249,22 +244,23 @@ public class SIM {
                     synchronized (this) {
                         notify();
                     }
-                    Thread t = new Thread(new Runnable() {
-                        public void run() {
-                            while (status.equals("working")) {
-                                try {
-                                    Thread.sleep(durasi * 1000); // konversi ke milidetik
-                                    kekenyangan -= durasi/30 * 10;
-                                    mood -= durasi/30 * 10;
-                                    uang += pekerjaan.getGaji();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+                    try{
+                        for (int i = 0; i < durasi; i++) {
+                            if (durasi % 30 == 0){
+                                kekenyangan -= 10;
+                                mood -= 10;
                             }
-                            status = "idle";
+                            // Menunggu sampai waktu main selesai
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    });
-                    t.start();
+                    }finally{
+                        uang += pekerjaan.getGaji();
+                        status = "idle";   
+                    }
                 }
             } else {
                 System.out.println("Durasi kerja harus kelipatan 120 detik.");
@@ -274,12 +270,29 @@ public class SIM {
     
 
     // Implementasi aksi olahraga
-    public void olahraga(int durasi){
+    public void olahraga(int durasi) {
         if (status.equals("idle")) {
             if(durasi % 20 == 0){// validasi kelipatan 20 detik
                 status = "olahraga";
                 synchronized (this) {
                     notify();
+                }
+                try{
+                    for (int i = 0; i < durasi; i++) {
+                        if(durasi % 20 == 0){
+                            kekenyangan -= 5;
+                            kesehatan += 5;
+                            mood += 10;
+                        }
+                        // Menunggu sampai waktu main selesai
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }finally{
+                    status = "idle";   
                 }
                 Thread t = new Thread(new Runnable() {
                     public void run() {
@@ -310,7 +323,7 @@ public class SIM {
         boolean KasurKingSizeTersedia= false;
         boolean KasurQueenSizeTersedia= false;
         boolean KasurSingleTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
+        for (Objek objek : locRuangSim.getDaftarObjek()) {
             if (objek instanceof KasurKingSize) {
                 KasurKingSizeTersedia = true;
                 break;
@@ -342,41 +355,31 @@ public class SIM {
                 synchronized (this) {
                     notify();
                 }
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        int waktuTidur = 0;
-                        while (status.equals("tidur") && waktuTidur < durasiTidur) {
-                            try {
-                                Thread.sleep(durasiTidur * 1000); 
-                                waktuTidur++;
-                                if (waktuTidur % 60 == 0) { // 1 menit
-                                    mood += 7.5f;
-                                    kesehatan += 5;
-                                }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (waktuTidur < 180 * 1000) { // 3 menit
-                            kesehatan -= 5;
-                            mood -= 5;
-                        } else { 
-                            kesehatan += 20;
+                try{
+                    for (int i = 0; i < durasiTidur; i++) {
+                        if (durasiTidur % 240 == 0) { 
                             mood += 30;
+                            kesehatan += 20;
                         }
-                        status = "idle";
+                        // Menunggu sampai waktu mandi selesai
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                });
-                t.start();
+                }finally{
+                    status = "idle";   
+                }
             }
         }
     }
     
     //implementasi aksi makan
-    public void makan(ObjekMakanan makanan) {
+    public void makan(ObjekMakanan makanan){
         // Cek keberadaan meja dan kursi
         boolean mejakursiTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
+        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
             if (objek instanceof MejaDanKursi) {
                 mejakursiTersedia = true;
                 break;
@@ -387,44 +390,41 @@ public class SIM {
             return;
         }
         if (status.equals("idle") && currentobj.equals("MejadanKursi")) {
+            if (inventory.contains(makanan)) {
+                inventory.removeObject(makanan);
+            } else {
+                System.out.println("Tidak ada makanan tersebut di inventory.");
+                status = "idle";
+                return;
+            }
             status = "makan";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    int waktuMakan = (int) (Math.random() * 31) + 30; // Lama waktu makan secara random antara 30-60 detik
-                    int counter = 0;
-                    while (status.equals("makan")) {
-                        if (counter == waktuMakan) { // Setiap 30 detik, kekenyangan bertambah
-                            kekenyangan += makanan.getKekenyangan();
-                            counter = 0;
-                        }
-                        if (inventory.contains(makanan)) {
-                            inventory.removeObject(makanan);
-                        } else {
-                            System.out.println("Tidak ada makanan tersebut di inventory.");
-                            status = "idle";
-                            return;
-                        }
-                        counter++;
-                        try {
-                            Thread.sleep(waktuMakan * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuMakan = (int) (Math.random() * 31) + 30; // Lama waktu makan secara random antara 30-60 detik
+                int counter = 0;
+                for (int i = 0; i < waktuMakan; i++) {
+                    if (counter % 30 == 0){
+                        kekenyangan += makanan.getKekenyangan();
                     }
-                    // Setelah makan selesai, cek durasi sejak selesai makan sampai buang air
-                    long durasiMakan = System.currentTimeMillis()/1000 - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
-                    if (durasiMakan > 240) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
-                        int kurang = (int) (durasiMakan / 240); // Hitung berapa kali kurang dalam interval 4 menit
-                        mood -= 5 * kurang;
-                        kesehatan -= 5 * kurang;
+                    // Menunggu sampai waktu mandi selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+                // Setelah makan selesai, cek durasi sejak selesai makan sampai buang air
+                long durasiMakan = System.currentTimeMillis()/1000 - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
+                if (durasiMakan > 240) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
+                    int kurang = (int) (durasiMakan / 240); // Hitung berapa kali kurang dalam interval 4 menit
+                    mood -= 5 * kurang;
+                    kesehatan -= 5 * kurang;
+                }
+            }finally{
+                status = "idle";   
+            }
         }
     }
     
@@ -433,7 +433,7 @@ public class SIM {
         // Cek keberadaan kompor
         boolean komporgasTersedia = false;
         boolean komporlistrikTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
+        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
             if (objek instanceof KomporGas) {
                 komporgasTersedia = true;
                 break;
@@ -467,28 +467,24 @@ public class SIM {
                 synchronized (this) {
                     notify();
                 }
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        while (status.equals("masak")){
-                            int waktuMasak = (int) (1.5 * menu.getKekenyangan());
-                            System.out.println(namaLengkap + " sedang memasak " + menu.getNama() + " (" + waktuMasak + " detik)...");
-                            try {
-                                Thread.sleep(waktuMasak * 1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            // Hapus bahan-bahan yang digunakan dari inventory
-                            for (ObjekMakanan bahan : menu.getListBahan()) {
-                                inventory.removeObject(bahan);
-                            }
-                            inventory.addObject(menu);
-                            mood += 10;
-                            System.out.println(namaLengkap + " berhasil memasak " + menu.getNama() + " dan mood bertambah " + mood);
+                try{
+                    int waktuMasak = (int) (1.5 * menu.getKekenyangan());
+                    for (int i = 0; i < waktuMasak; i++) {
+                        // Menunggu sampai waktu main selesai
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                        status = "idle";
                     }
-                });
-                t.start();
+                    for (ObjekMakanan bahan : menu.getListBahan()) {
+                        inventory.removeObject(bahan);
+                    }
+                    inventory.addObject(menu);
+                }finally{
+                    mood += 10;
+                    status = "idle";   
+                }
             }
         }
     }
@@ -498,33 +494,33 @@ public class SIM {
         int waktu = (int) (jarak); // menghitung waktu yang dibutuhkan 
         if (status.equals("idle")) {
             status = "berkunjung";
+            System.out.println(namaLengkap + " sedang berkunjung ke rumah lain (" + waktu + " detik)...");
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    System.out.println(namaLengkap + " sedang berkunjung ke rumah lain (" + waktu + " detik)...");
+            try{
+                for (int i = 0; i < waktu; i++) {
+                    mood += (waktu/30) * 10; 
+                    kekenyangan -= (waktu/30) * 10; 
+                    // Menunggu sampai waktu mandi selesai
                     try {
-                        Thread.sleep(waktu * 1000); // menghabiskan waktu kunjungan
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    mood += waktu/30 * 10; 
-                    kekenyangan -= waktu/30 * 10; 
-                    System.out.println(namaLengkap + " sampai ke rumah lain dan moodnya bertambah " + mood + " poin, namun kekenyangannya berkurang " + kekenyangan + " poin.");
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
     
     
     // implementasi aksi buang air
-    public void buangAir(){
+    public void buangAir() {
         // Cek keberadaan toilet
         boolean ToiletTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
+        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
             if (objek instanceof Toilet) {
                 ToiletTersedia = true;
                 break;
@@ -539,34 +535,31 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
-                    int counter = 0;
-                    while (status.equals("BuangAir")){
-                        if (counter % 10 == 0) { // Setiap 10 detik, kekenyangan berkurang
-                            kekenyangan -= 20;
-                            mood += 10;
-                            counter = 0;
-                        }
-                        counter++;
-                        try {
-                            Thread.sleep(waktuBuangAir * 1000); // Tunggu 10 detik
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
+                int counter = 0;
+                for (int i = 0; i < waktuBuangAir; i++) {
+                    if (counter % 10 == 0) { // Setiap 10 detik, kekenyangan berkurang
+                        kekenyangan -= 20;
+                        mood += 10;
+                        counter = 0;
                     }
-                    // Setelah buang air selesai, cek durasi sejak selesai makan sampai buang air
-                    long durasiMakanDanBuangAir = System.currentTimeMillis() - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
-                    if (durasiMakanDanBuangAir > 240000) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
-                        int kurang = (int) (durasiMakanDanBuangAir / 240000); // Hitung berapa kali kurang dalam interval 4 menit
-                        mood -= 5 * kurang;
-                        kesehatan -= 5 * kurang;
+                    counter++;
+                    try {
+                        Thread.sleep(1000); 
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+                long durasiMakanDanBuangAir = System.currentTimeMillis() - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
+                if (durasiMakanDanBuangAir > 240000) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
+                    int kurang = (int) (durasiMakanDanBuangAir / 240000); // Hitung berapa kali kurang dalam interval 4 menit
+                    mood -= 5 * kurang;
+                    kesehatan -= 5 * kurang;
+                }
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
@@ -579,7 +572,7 @@ public class SIM {
     public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
         //menambahkan objek
         locRuangSim.tambahObjek(namaBarang, x, y);
-        System.out.println("Barang " + namaBarang.getNama() + " telah dipasang pada posisi " + x + "," + y);
+        System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
     }
 
     //implementasi aksi berpindah ruangan
@@ -593,7 +586,7 @@ public class SIM {
     public void melihatWaktu(){
         // Cek keberadaan toilet
         boolean jamTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getObjekList()) {
+        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
             if (objek instanceof Jam) {
                 jamTersedia = true;
                 break;
@@ -614,187 +607,173 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("mandi")){
-                        int waktuMandi = 10;
-                        mood += 10;
-                        kekenyangan -= 5;
-                        // Menunggu sampai waktu mandi selesai
-                        try {
-                            Thread.sleep(waktuMandi * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                float waktuMandi = 10;
+                for (int i = 0; i < waktuMandi; i++) {
+                    kekenyangan -= 0.5;
+                    mood += 1;
+                    // Menunggu sampai waktu mandi selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }      
         }
     }
 
     //implementasi aksi main game
-    public void mainGame(){
+    public void mainGame() {
         if (status.equals("idle")) {
             status = "mainGame";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("mainGame")){
-                        int waktuMain = 10;
-                        mood += 10;
-                        kekenyangan -= 5;
-                        kesehatan -= 5;
-                        // Menunggu sampai waktu main selesai
-                        try {
-                            Thread.sleep(waktuMain * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuMain = 10;
+                for (int i = 0; i < waktuMain; i++) {
+                    mood += 1;
+                    kekenyangan -= 0.5;
+                    kesehatan -= 0.5;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
     //implementasi aksi meneonton film
-    public void menontonFilm(){
+    public void menontonFilm() {
         if (status.equals("idle")) {
             status = "menontonFilm";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("MenontonFilm")){
-                        int waktuNonton = 10;
-                        mood += 15;
-                        kekenyangan -= 5;
-                        // Menunggu sampai waktu menonton selesai
-                        try {
-                            Thread.sleep(waktuNonton * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuNonton = 10;
+                for (int i = 0; i < waktuNonton; i++) {
+                    mood += 1.5;
+                    kekenyangan -= 0.5;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
     //implementasi aksi membaca
-    public void membaca(){
+    public void membaca() {
         if (status.equals("idle")) {
             status = "membaca";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("membaca")){
-                        int waktuMembaca = 10;
-                        mood += 10;
-                        kekenyangan -= 5;
-                        // Menunggu sampai waktu membaca selesai
-                        try {
-                            Thread.sleep(waktuMembaca * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuMembaca = 10;
+                for (int i = 0; i < waktuMembaca; i++) {
+                    mood += 1;
+                    kekenyangan -= 0.5;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
     //implementasi aksi membersihkan ruangan
-    public void membersihkanRuangan(){
+    public void membersihkanRuangan() {
         if (status.equals("idle")) {
             status = "membersihkanRuangan";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("membersihkanRuangan")){
-                        int waktumembersihkanRuangan = 10;
-                        mood += 10;
-                        kekenyangan -= 10;
-                        // Menunggu sampai waktu membersihkanRuangan selesai
-                        try {
-                            Thread.sleep(waktumembersihkanRuangan * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktumembersihkanRuangan = 10;
+                for (int i = 0; i < waktumembersihkanRuangan; i++) {
+                    mood += 1;
+                    kekenyangan -= 1;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
     //implementasi aksi meditasi
-    public void meditasi(){
+    public void meditasi() {
         if (status.equals("idle")) {
             status = "meditasi";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("meditasi")){
-                        int waktuMeditasi = 10;
-                        kekenyangan -= 5;
-                        kesehatan += 10;
-                        // Menunggu sampai waktu meditasi selesai
-                        try {
-                            Thread.sleep(waktuMeditasi * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuMeditasi = 10;
+                for (int i = 0; i < waktuMeditasi; i++) {
+                    kesehatan += 1;
+                    kekenyangan -= 0.5;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 
     //implementasi aksi belajar
-    public void belajar(){
+    public void belajar() {
         if (status.equals("idle")) {
             status = "belajar";
             synchronized (this) {
                 notify();
             }
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    while (status.equals("belajar")){
-                        int waktuBelajar = 10;
-                        mood += 5;
-                        kekenyangan -= 5;
-                        kesehatan -= 5;
-                        // Menunggu sampai waktu belajar selesai
-                        try {
-                            Thread.sleep(waktuBelajar * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            try{
+                int waktuBelajar = 10;
+                for (int i = 0; i < waktuBelajar; i++) {
+                    mood += 0.5;
+                    kekenyangan -= 0.5;
+                    kesehatan -= 0.5;
+                    // Menunggu sampai waktu main selesai
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    status = "idle";
                 }
-            });
-            t.start();
+            }finally{
+                status = "idle";   
+            }
         }
     }
 }
