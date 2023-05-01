@@ -9,20 +9,19 @@ public class Main {
         SIM sim = new SIM("dummy");
         Inventory inventory = new Inventory(sim);
         Rumah rumah = new Rumah(0, 0, "dummy");
-        World dunia = new World(64, 64);
+        World dunia = new World();
         int count = 0;
         while (!status) {
             System.out.printf("masukkan command: ");
             String command = scan.nextLine();
             switch (command){
                 case "start game" :
-                    System.out.println("game dimulai");
                     if (count == 0) {
                         System.out.println("mulai");
                         count = 1;
                         ingame = true;
 
-                        dunia = new World(64,64);
+                        dunia = new World();
                         for (int x = 0; x < 64; x++) {
                             for (int y = 0; y < 64; y++) {
                                 dunia.setObject(x,y,false);
@@ -153,6 +152,7 @@ public class Main {
                         scan.nextLine();
                         if(noruangan<=rumah.getDaftarRuangan().size() && noruangan>0){
                             sim.setLocRuanganSim(rumah.getDaftarRuangan().get(noruangan-1));
+                            System.out.println("berhasil pindah ke ruangan tujuan");
                         }
                     }
                     else{
@@ -220,6 +220,7 @@ public class Main {
                             case 2 :
                                 sim.getLocRuanganSim().displayRuangan();
                                 sim.getLocRuanganSim().printListObjekRuangan();
+                                System.out.printf("masukkan nomor objek yang ingin dipindah : ");
                                 int pindahbarang = scan.nextInt();
                                 if (pindahbarang > 0 && pindahbarang <= sim.getLocRuanganSim().getDaftarObjek().size()) {
                                     System.out.printf("masukkan x baru : ");
@@ -700,5 +701,6 @@ public class Main {
         }
     }
 }
+
 
 
