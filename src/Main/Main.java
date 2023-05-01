@@ -1,6 +1,6 @@
 import java.util.*;
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Scanner scan = new Scanner(System.in);
         boolean ingame = false;
         boolean status = false;
@@ -124,10 +124,11 @@ public class Main {
                         rumah.displayRumah();
                         System.out.printf("Masukkan ruangan acuan: ");
                         int ruangAcuan = scan.nextInt();
+                        scan.nextLine();
                         if (ruangAcuan>0 && ruangAcuan<=rumah.getDaftarRuangan().size()){
-                            System.out.println("Masukkan posisi ruangan yang akan dibuat: ");
+                            System.out.printf("Masukkan posisi ruangan yang akan dibuat: ");
                             String posisi = scan.nextLine();
-                            System.out.println("Masukkan nama ruangan baru: ");
+                            System.out.printf("Masukkan nama ruangan baru: ");
                             String namaRuanganbaru = scan.nextLine();
                             Ruangan acuan = rumah.getDaftarRuangan().get(ruangAcuan-1);
                             Ruangan ruanganbaru = new Ruangan(namaRuanganbaru);
@@ -145,8 +146,9 @@ public class Main {
                     if (ingame && sim.getStatus().equals("idle")){
                         System.out.println("list ruangan");
                         rumah.displayRumah();
-                        int noruangan = scan.nextInt();
                         System.out.printf("masukkan nomor ruangan : ");
+                        int noruangan = scan.nextInt();
+                        scan.nextLine();
                         if(noruangan<=rumah.getDaftarRuangan().size() && noruangan>0){
                             sim.setLocRuanganSim(rumah.getDaftarRuangan().get(noruangan-1));
                         }
@@ -173,42 +175,44 @@ public class Main {
                                 System.out.println("7. meja dan kursi 50");
                                 System.out.println("8. jam 10");
                                 System.out.printf("masukkan nomor pilihan: ");
-                                String beli = scan.nextLine();
+                                int beli = scan.nextInt();
+                                scan.nextLine();
                                 switch(beli){
-                                    case "1":
+                                    case 1:
                                         KasurSingle kasursingle = new KasurSingle();
                                         sim.buyObjek(kasursingle);
                                         break;
-                                    case "2":
+                                    case 2:
                                         KasurQueenSize kasurqueen = new KasurQueenSize();
                                         sim.buyObjek(kasurqueen);
                                         break;
-                                    case "3":
+                                    case 3:
                                         KasurKingSize kasurking = new KasurKingSize();
                                         sim.buyObjek(kasurking);
                                         break;
-                                    case "4":
+                                    case 4:
                                         Toilet toilet = new Toilet();
                                         sim.buyObjek(toilet);
                                         break;
-                                    case "5":
+                                    case 5:
                                         KomporGas komporgas = new KomporGas();
                                         sim.buyObjek(komporgas);
                                         break;
-                                    case "6":
+                                    case 6:
                                         KomporListrik komporlistrik = new KomporListrik();
                                         sim.buyObjek(komporlistrik);
                                         break;
-                                    case "7":
+                                    case 7:
                                         MejaDanKursi mejakursi = new MejaDanKursi();
                                         sim.buyObjek(mejakursi);
                                         break;
-                                    case "8":
+                                    case 8:
                                         Jam jam = new Jam();
                                         sim.buyObjek(jam);
                                         break;
                                     default:
                                         System.out.println("command salah");
+                                        break;
                                 }
                                 break;
                             case 2 :
@@ -221,6 +225,7 @@ public class Main {
                                     System.out.printf("masukkan y baru : ");
                                     int ybaru = scan.nextInt();
                                     sim.getLocRuanganSim().pindahObjek(sim.getLocRuanganSim().getDaftarObjek().get(pindahbarang-1),xbaru,ybaru);
+                                    scan.nextLine();
                                 }
                                 break;
                             default:
@@ -344,6 +349,7 @@ public class Main {
                         else{
                             System.out.println("command salah");
                         }
+                        scan.nextLine();
                     }
                     else{
                         System.out.println("permainan belum dimulai atau SIM tidak berada di ruangan");
@@ -352,7 +358,7 @@ public class Main {
                 case "action tambahan":
                     if (ingame && sim.getStatus().equals("idle")){
                         System.out.println("list aksi");
-                        System.out.println("1. beli objek");
+                        System.out.println("1. beli makan");
                         System.out.println("2. change job");
                         System.out.println("3. kerja");
                         System.out.println("4. olahraga");
@@ -373,88 +379,48 @@ public class Main {
                         System.out.printf("masukkan aksi yang ingin dilakukan: ");
                         String aksi = scan.nextLine();
                         switch (aksi){
-                            case "beli objek":
+                            case "beli makan":
                                 System.out.println("list barang dan harga");
-                                System.out.println("1. kasur single 50");
-                                System.out.println("2. kasur queen size 100");
-                                System.out.println("3. kasur king size 150");
-                                System.out.println("4. toilet 50");
-                                System.out.println("5. kompor gas 100");
-                                System.out.println("6. kompor listrik 200");
-                                System.out.println("7. meja dan kursi 50");
-                                System.out.println("8. jam 10");
-                                System.out.println("9. nasi 5");
-                                System.out.println("10. kentang 3");
-                                System.out.println("11. ayam 10");
-                                System.out.println("12. sapi 12");
-                                System.out.println("13. wortel 3");
-                                System.out.println("14. bayam 3");
-                                System.out.println("15. kacang 2");
-                                System.out.println("16. susu 2");
+                                System.out.println("1. nasi 5");
+                                System.out.println("2. kentang 3");
+                                System.out.println("3. ayam 10");
+                                System.out.println("4. sapi 12");
+                                System.out.println("5. wortel 3");
+                                System.out.println("6. bayam 3");
+                                System.out.println("7. kacang 2");
+                                System.out.println("8. susu 2");
                                 System.out.printf("masukkan nomor pilihan barang yang ingin dibeli");
                                 String pilihan = scan.nextLine();
                                 switch(pilihan){
                                     case "1":
-                                        KasurSingle kasursingle = new KasurSingle();
-                                        sim.buyObjek(kasursingle);
-                                        break;
-                                    case "2":
-                                        KasurQueenSize kasurqueen = new KasurQueenSize();
-                                        sim.buyObjek(kasurqueen);
-                                        break;
-                                    case "3":
-                                        KasurKingSize kasurking = new KasurKingSize();
-                                        sim.buyObjek(kasurking);
-                                        break;
-                                    case "4":
-                                        Toilet toilet = new Toilet();
-                                        sim.buyObjek(toilet);
-                                        break;
-                                    case "5":
-                                        KomporGas komporgas = new KomporGas();
-                                        sim.buyObjek(komporgas);
-                                        break;
-                                    case "6":
-                                        KomporListrik komporlistrik = new KomporListrik();
-                                        sim.buyObjek(komporlistrik);
-                                        break;
-                                    case "7":
-                                        MejaDanKursi mejakursi = new MejaDanKursi();
-                                        sim.buyObjek(mejakursi);
-                                        break;
-                                    case "8":
-                                        Jam jam = new Jam();
-                                        sim.buyObjek(jam);
-                                        break;
-                                    case "9":
                                         Nasi nasi = new Nasi();
                                         sim.buyObjek(nasi);
                                         break;
-                                    case "10":
+                                    case "2":
                                         Kentang kentang = new Kentang();
                                         sim.buyObjek(kentang);
                                         break;
-                                    case "11":
+                                    case "3":
                                         Ayam ayam = new Ayam();
                                         sim.buyObjek(ayam);
                                         break;
-                                    case "12":
+                                    case "4":
                                         Sapi sapi = new Sapi();
                                         sim.buyObjek(sapi);
                                         break;
-                                    case "13":
+                                    case "5":
                                         Wortel wortel = new Wortel();
                                         sim.buyObjek(wortel);
                                         break;
-                                    case "14":
+                                    case "6":
                                         Bayam bayam = new Bayam();
                                         sim.buyObjek(bayam);
                                         break;
-                                    case "15":
+                                    case "7":
                                         Kacang kacang = new Kacang();
                                         sim.buyObjek(kacang);
                                         break;
-                                    case "16":
+                                    case "8":
                                         Susu susu = new Susu();
                                         sim.buyObjek(susu);
                                         break;
@@ -714,7 +680,8 @@ public class Main {
                                     sim.mandi();
                                     break;
                                 default:
-                                    
+                                    System.out.println("command salah");
+                                    break;
                             }
                     }
                     else{
@@ -725,9 +692,9 @@ public class Main {
                 default:
                     System.out.println("command salah");
                     System.out.println("ketik \"help\" untuk melihat list command");
-                    break;  
-            }
-        
+                    break;
+                }
         }
     }
 }
+
