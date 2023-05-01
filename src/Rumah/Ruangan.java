@@ -1,7 +1,4 @@
-import Objek.Objek;
-import Objek.ObjekNonMakanan.*;
-import java.util.ArrayList;
-
+import java.util.*;
 public class Ruangan {
 
     // atribut
@@ -12,8 +9,8 @@ public class Ruangan {
     private String nama;
     private Objek[][] objectTile;
 
-    private ArrayList<Objek> daftarObjek;
-
+    private ArrayList<ObjekNonMakanan> daftarObjek = new ArrayList<>();
+    private Map<ObjekNonMakanan, Point> objekMap = new HashMap<>();
     private Ruangan ruanganAtas;
     private Ruangan ruanganBawah;
     private Ruangan ruanganKanan;
@@ -22,7 +19,7 @@ public class Ruangan {
     // constructor
     public Ruangan(String nama) {
         this.nama = nama;
-        objectTile = new Objek[width][length];
+        objectTile = new ObjekNonMakanan[width][length];
 
         // nilai default untuk lokasinya (0,0) & ruangan di sisi-sisinya 0 semua
         ruanganLoc = new Point(0,0);
@@ -37,15 +34,19 @@ public class Ruangan {
         return nama;
     }
 
+    public Map<ObjekNonMakanan, Point> getObjekMap(){
+        return objekMap;
+    }
+
     //getter daftar Objek
-    public ArrayList<Objek> getDaftarObjek() {
+    public ArrayList<ObjekNonMakanan> getDaftarObjek() {
         return daftarObjek;
     }
     
     public void printListObjekRuangan(){
         System.out.println("daftar ruangan");
         for (int i = 0; i < daftarObjek.size(); i++) {
-            System.out.println((i+1) + ". " + daftarObjek.get(i));
+            System.out.println((i+1) + ". " + daftarObjek.get(i).getNama() + " (" +objekMap.get(daftarObjek.get(i)).getX()+","+objekMap.get(daftarObjek.get(i)).getY()+")");
         }
     }
 
@@ -86,6 +87,8 @@ public class Ruangan {
                 }
             }
             daftarObjek.add(obj);
+            Point point = new Point(x,y);
+            objekMap.put(obj,point);
         }
     }
 
@@ -97,6 +100,7 @@ public class Ruangan {
             }
         }
         daftarObjek.remove(obj);
+        objekMap.remove(obj);
     }
 
     // method buat mindahin objek di dalam ruangan.
@@ -193,3 +197,4 @@ public class Ruangan {
 
 
 }
+
