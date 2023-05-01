@@ -5,10 +5,10 @@ public class World {
     private int day = 0;
     private int time = 0;
     private List<Rumah> listRumah = new  ArrayList<>();
-    private static World world = new World(panjang,lebar);
+    private static World world = new World();
     private boolean[][] map;
     
-    public World(int panjang, int lebar) {
+    public World() {
         this.panjang = panjang;
         this.lebar=lebar;
         map = new boolean[panjang][lebar];
