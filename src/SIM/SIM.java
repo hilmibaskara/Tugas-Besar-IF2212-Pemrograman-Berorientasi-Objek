@@ -26,6 +26,7 @@ public class SIM {
     private Rumah locRumahSim;
     private Ruangan locRuangSim;
     private String currentobj;
+    private boolean isAlive;
 
     public SIM(String namaLengkap){
         this.namaLengkap = namaLengkap;
@@ -34,6 +35,7 @@ public class SIM {
         this.mood = 80;
         this.kesehatan = 80;
         this.status = "idle";
+        this.isAlive = true;
         int randomJob = (int) (Math.random() * 5) + 1;
         switch (randomJob) {
             case 1:
@@ -144,6 +146,33 @@ public class SIM {
         this.currentobj = namaBarang;
     }
 
+    public void cekKesejahteraan(){
+        if (mood > 100){
+            mood = 100;
+        }
+        if (kekenyangan > 100){
+            kekenyangan = 100;
+        }
+        if (kesehatan > 100){
+            kesehatan = 100;
+        }
+        if (mood < 0){
+            mood = 0;
+        }
+        if (kekenyangan < 0){
+            kekenyangan = 0;
+        }
+        if (kesehatan < 0){
+            kesehatan = 0;
+        }
+        if (mood == 0 && kesehatan == 0 && kekenyangan == 0){
+            isAlive = false;
+            System.out.println("SIM meninggal");
+        }else{
+            isAlive = true;
+        }
+    }
+
     //implementasi menghitung waktu bekerja
     private int getDurasiBekerja() {
         if (waktuMulaiBekerja == null) {
@@ -165,17 +194,8 @@ public class SIM {
             // Tentukan waktu pengiriman
             int waktuPengiriman = (int) (Math.random() * 5 + 1) * 30;
 
-            // Tunggu waktu pengiriman
-            synchronized (this) {
-                try {
-                    if (status.equals("idle")) {
-                        wait();
-                    }
-                    Thread.sleep(waktuPengiriman * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+            // implementasi waktupengirimanbarang
+            
 
             // Tambahkan barang ke inventory
             inventory.addObject(barang);
@@ -199,19 +219,7 @@ public class SIM {
             // Menambah ruangan baru
             locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
             uang -= 1500;
-            synchronized(this){
-                try {
-                    if (status.equals("idle")) {
-                        wait();
-                    }
-                    Thread.sleep(18 * 60 * 1000); // 18 menit
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                finally{
-                    status = "idle";   
-                }
-            }      
+            // implementasi timerupgraderumah
         } else {
             System.out.println("Uang sim tidak mencukupi untuk upgrade rumah.");
         }
@@ -246,10 +254,6 @@ public class SIM {
                     }
                     try{
                         for (int i = 0; i < durasi; i++) {
-                            if (durasi % 30 == 0){
-                                kekenyangan -= 10;
-                                mood -= 10;
-                            }
                             // Menunggu sampai waktu main selesai
                             try {
                                 Thread.sleep(1000);
@@ -259,6 +263,9 @@ public class SIM {
                         }
                     }finally{
                         uang += pekerjaan.getGaji();
+                        kekenyangan = kekenyangan - (durasi/3);
+                        mood = mood - (durasi/3);
+                        cekKesejahteraan();
                         status = "idle";   
                     }
                 }
@@ -279,11 +286,6 @@ public class SIM {
                 }
                 try{
                     for (int i = 0; i < durasi; i++) {
-                        if(durasi % 20 == 0){
-                            kekenyangan -= 5;
-                            kesehatan += 5;
-                            mood += 10;
-                        }
                         // Menunggu sampai waktu main selesai
                         try {
                             Thread.sleep(1000);
@@ -292,24 +294,12 @@ public class SIM {
                         }
                     }
                 }finally{
+                    kekenyangan -= (durasi/4);
+                    kesehatan += (durasi/4);
+                    mood += (durasi/2);
+                    cekKesejahteraan();
                     status = "idle";   
                 }
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        while (status.equals("olahraga")) {
-                            try {
-                                Thread.sleep(durasi * 1000); // konversi ke milidetik
-                                kekenyangan -= durasi/20 * 5;
-                                kesehatan += durasi/20 * 5;
-                                mood += durasi/20 * 10;
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        status = "idle";
-                    }
-                });
-                t.start();
             }else{
                 System.out.println("Durasi olahraga harus merupakan kelipatan 20 detik.");
             }
@@ -369,6 +359,7 @@ public class SIM {
                         }
                     }
                 }finally{
+                    cekKesejahteraan();
                     status = "idle";   
                 }
             }
@@ -423,6 +414,7 @@ public class SIM {
                     kesehatan -= 5 * kurang;
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -483,6 +475,7 @@ public class SIM {
                     inventory.addObject(menu);
                 }finally{
                     mood += 10;
+                    cekKesejahteraan();
                     status = "idle";   
                 }
             }
@@ -510,6 +503,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -558,6 +552,7 @@ public class SIM {
                     kesehatan -= 5 * kurang;
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -620,6 +615,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }      
         }
@@ -646,6 +642,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -671,6 +668,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -696,6 +694,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -721,6 +720,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -746,6 +746,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
@@ -772,6 +773,7 @@ public class SIM {
                     }
                 }
             }finally{
+                cekKesejahteraan();
                 status = "idle";   
             }
         }
