@@ -1,8 +1,11 @@
-import java.util.List;
+import java.util.*;
 public class World {
-    private int panjang = 0;
-    private int lebar = 0;
-    private List<Rumah> listRumah;
+    private int panjang = 64;
+    private int lebar = 64;
+    private int day = 0;
+    private int time = 0;
+    private List<Rumah> listRumah = new  ArrayList<>();
+    private static World world = new World(panjang,lebar);
     private boolean[][] map;
     
     public World(int panjang, int lebar) {
@@ -23,6 +26,9 @@ public class World {
         return listRumah;
     }
 
+    static World getWorld(){
+        return world;
+    }
     public void printListRumah(){
         System.out.println("daftar rumah");
         for (int i = 0; i < listRumah.size(); i++) {
@@ -41,4 +47,32 @@ public class World {
     public boolean getObject(int x, int y) {
         return map[x][y];
     }
+
+    public int getDay(){
+        return day;
+    }
+
+    public int getTime(){
+        return time;
+    }
+
+    public void setDay(int day){
+        this.day = day;
+    }
+
+    public void setTime(int time){
+        this.time=time;
+    }
+
+    public void addTime(int time){
+        int total = this.time + time;
+        if(total>720){
+            setDay((day+total)/720);
+            setTime(total%720);
+        }
+        else{
+            setTime(total);
+        }
+    }
+
 }
