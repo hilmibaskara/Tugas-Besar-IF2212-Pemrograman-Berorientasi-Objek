@@ -60,6 +60,7 @@ public class Main {
                         sim.pasangBarang(toilet,6,6);
                         sim.pasangBarang(mejakursi,2,3);
                         sim.pasangBarang(jam,4,6);
+                        sim.setInventory(inventory);
                     }
                     else{
                         System.out.println("game sudah dimulai");
@@ -276,6 +277,7 @@ public class Main {
                             Rumah rumahbaru= new Rumah(locX,locY,command);
                             dunia.addRumah(rumahbaru);
                             Inventory inventorybaru = new Inventory(simbaru);
+                            simbaru.setInventory(inventorybaru);
                             inventorylist.add(inventorybaru);
                             System.out.println("SIM berhasil ditambahkan");
                         }
@@ -382,6 +384,7 @@ public class Main {
                         System.out.println("18. belajar");
                         System.out.printf("masukkan aksi yang ingin dilakukan: ");
                         String aksi = scan.nextLine();
+                        scan.nextLine();
                         switch (aksi){
                             case "beli makan":
                                 System.out.println("list barang dan harga");
@@ -393,7 +396,7 @@ public class Main {
                                 System.out.println("6. bayam 3");
                                 System.out.println("7. kacang 2");
                                 System.out.println("8. susu 2");
-                                System.out.printf("masukkan nomor pilihan barang yang ingin dibeli");
+                                System.out.printf("masukkan nomor pilihan barang yang ingin dibeli: ");
                                 String pilihan = scan.nextLine();
                                 switch(pilihan){
                                     case "1":
@@ -442,6 +445,7 @@ public class Main {
                                     System.out.println("5. programmer");
                                     System.out.printf("masukkan nomor pekerjaan yang dipilih: ");
                                     String pekerjaan = scan.nextLine();
+                                    scan.nextLine();
                                     switch (pekerjaan){
                                         case "1":
                                             BadutSulap badut = new BadutSulap();
@@ -497,6 +501,7 @@ public class Main {
                                     System.out.println("13. bistik");
                                     System.out.printf("masukkan nomor makanan yang dipilih: ");
                                     String makanan = scan.nextLine();
+                                    scan.nextLine();
                                     switch (makanan){
                                         case "1":
                                             Nasi nasi = new Nasi();
@@ -564,6 +569,7 @@ public class Main {
                                     System.out.println("5. bistik");
                                     System.out.printf("masukkan nomor masakan yang dipilih: ");
                                     String masakan = scan.nextLine();
+                                    scan.nextLine();
                                     switch (masakan) {
                                         case "1":
                                             NasiAyam nasiayam = new NasiAyam();
@@ -594,6 +600,7 @@ public class Main {
                                     dunia.printListRumah();
                                     System.out.printf("masukkan nomor rumah yang dipilih: ");
                                     int tujuan = scan.nextInt();
+                                    scan.nextLine();
                                     int x1,x2,y1,y2;
                                     Rumah rumahtujuan = dunia.getRumah().get(tujuan-1);
                                     x1 = rumah.getHouseLocX();
@@ -617,10 +624,13 @@ public class Main {
                                     System.out.println("8. jam ");
                                     System.out.printf("masukkan nomor pilihan: ");
                                     String pasang = scan.nextLine();
+                                    scan.nextLine();
                                     System.out.printf("masukkan koordinat x: ");
                                     int xpasang = scan.nextInt();
+                                    scan.nextLine();
                                     System.out.printf("masukkan koordinat y: ");
                                     int ypasang = scan.nextInt();
+                                    scan.nextLine();
                                     switch (pasang){
                                         case "1":
                                             KasurSingle kasursingle = new KasurSingle();
@@ -701,6 +711,3 @@ public class Main {
         }
     }
 }
-
-
-
