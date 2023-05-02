@@ -1,6 +1,6 @@
 import java.util.*;
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         boolean ingame = false;
         boolean status = false;
@@ -384,7 +384,6 @@ public class Main {
                         System.out.println("18. belajar");
                         System.out.printf("masukkan aksi yang ingin dilakukan: ");
                         String aksi = scan.nextLine();
-                        scan.nextLine();
                         switch (aksi){
                             case "beli makan":
                                 System.out.println("list barang dan harga");
@@ -473,15 +472,21 @@ public class Main {
                                     }
                                     break;
                                 case "kerja":
+                                    System.out.print("masukkan durasi kerja (kelipatan 120 detik) :");
                                     int durasi = scan.nextInt();
+                                    scan.nextLine();
                                     sim.kerja(durasi);
                                     break;
                                 case "olahraga":
+                                    System.out.print("masukkan durasi olahraga :");
                                     durasi = scan.nextInt();
+                                    scan.nextLine();
                                     sim.olahraga(durasi);
                                     break;
                                 case "tidur":
+                                    System.out.print("masukkan durasi tidur :");
                                     durasi = scan.nextInt();
+                                    scan.nextLine();
                                     sim.tidur(durasi);
                                     break;
                                 case "makan":
