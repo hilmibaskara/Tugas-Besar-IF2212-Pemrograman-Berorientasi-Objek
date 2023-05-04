@@ -1,12 +1,5 @@
 package SIM;
 
-import java.time.*;
-import java.util.*;
-import Objek.Objek;
-import Ruangan.Ruangan;
-import Rumah.Rumah;
-
-import java.time.*;
 import java.util.*;
 import java.lang.*;
 
@@ -19,10 +12,13 @@ public class SIM {
     private float mood;
     private float kesehatan;
     private String status;
-    private Time currentTime;
-    private LocalDateTime waktuMulaiBekerja;
-    private LocalDateTime waktuMakanTerakhir;
-    private LocalDate waktuPenggantianPekerjaan;
+    private int durasimulaimakan;
+    private int durasimulaitidur;
+    private int durasikerja;
+    private int keluarkerja = -9999;
+    private boolean buangair = false;
+    private boolean mulaimakan = false;   
+    private World world;
     private Rumah locRumahSim;
     private Ruangan locRuangSim;
     private String currentobj;
@@ -146,6 +142,30 @@ public class SIM {
         this.currentobj = namaBarang;
     }
 
+    public int getdurasimulaimakan(){
+        return this.durasimulaimakan;
+    }
+
+    public void setdurasimulaimakan(int durasimulaimakan){
+        this.durasimulaimakan = durasimulaimakan;
+    }
+
+    public int getdurasimulaitidur(){
+        return this.durasimulaitidur;
+    }
+
+    public void setdurasimulaitidur(int durasimulaitidur){
+        this.durasimulaitidur = durasimulaitidur;
+    }
+
+    public int getdurasikerja(){
+        return this.durasikerja;
+    }
+
+    public void setdurasikerja(int durasikerja){
+        this.durasikerja = durasikerja;
+    }
+
     public void cekKesejahteraan(){
         if (mood > 100){
             mood = 100;
@@ -173,30 +193,44 @@ public class SIM {
         }
     }
 
-    //implementasi menghitung waktu bekerja
-    private int getDurasiBekerja() {
-        if (waktuMulaiBekerja == null) {
-            return 0;
-        } else {
-            LocalDateTime waktuSekarang = LocalDateTime.now();
-            Duration durasi = Duration.between(waktuMulaiBekerja, waktuSekarang);
-            return (int) durasi.toSeconds();
+    public void durasiTidurdanBuangAir(int time){
+        int currentTime = world.getDay() * 720 + world.getTime() + time;
+        world.addTime(time);
+        if (currentTime - durasimulaimakan >= 240 && buangair == false && mulaimakan == true){
+            kesehatan -= -5;
+            mood -= 5;
+            setdurasimulaimakan(durasimulaimakan + 240);
+        }
+        if (currentTime - durasimulaitidur >= 600 ){
+            kesehatan -= 5;
+            mood -= 5;
+            setdurasimulaitidur(durasimulaitidur + 600);
         }
     }
-
     //implementasi aksi membeli objek
     public void buyObjek(Objek barang) {
         int hargaBarang = barang.getHarga();
+        int waktuPengiriman;
+        int waktuSelesai;
+        boolean tick = true;
         if (uang >= hargaBarang) {
             // Kurangi uang sesuai harga barang
             uang -= hargaBarang;
-
             // Tentukan waktu pengiriman
-            int waktuPengiriman = (int) (Math.random() * 5 + 1) * 30;
-
-            // implementasi waktupengirimanbarang
-            
-
+            waktuPengiriman = (int) (Math.random() * 5 + 1) * 30;
+            waktuSelesai = world.getDay()*720 + world.getTime() + waktuPengiriman;
+            while (tick){
+                synchronized(this){
+                    try{
+                        wait();
+                    }catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (world.getDay() * 720 + world.getTime() >= waktuSelesai){
+                    tick = false;
+                }
+            }
             // Tambahkan barang ke inventory
             inventory.addObject(barang);
             System.out.println("Barang " + barang + " telah diterima dan masuk ke dalam inventory.");
@@ -209,6 +243,8 @@ public class SIM {
 
     //implementasi aksi upgrade rumah
     public void upgradeRumah(Ruangan namaRuanganbaru, Ruangan ruangAcuan, String posisi){
+        int waktuSelesai;
+        boolean tick = true; 
         if (uang >= 1500) { // cek apakah uang sim mencukupi untuk upgrade rumah
             if (locRumahSim.getDaftarRuangan().size() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
                 if (namaRuanganbaru.equals(ruangAcuan)) { // cek apakah ruang acuan yang dipilih ada di daftar ruangan sim
@@ -216,10 +252,25 @@ public class SIM {
                     return;
                 }
             }
-            // Menambah ruangan baru
-            locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
+            // Mengurangi uang
             uang -= 1500;
             // implementasi timerupgraderumah
+            waktuSelesai = world.getDay() + world.getTime() + 1080;
+            while (tick) {
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        System.err.println(e);
+                    }
+                }
+                // mengecek jam
+                if (world.getDay() * 720 + world.getTime() >= waktuSelesai) {
+                    tick = false;
+                }
+            }
+            // Menambah ruangan baru
+            locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
         } else {
             System.out.println("Uang sim tidak mencukupi untuk upgrade rumah.");
         }
@@ -227,12 +278,14 @@ public class SIM {
     
     //implementasi aksi mengganti pekerjaan
     public void changeJob(Job pekerjaanbaru){
-        if(this.pekerjaan != null && getDurasiBekerja() >= 720 && this.pekerjaan != pekerjaanbaru){ //cek apakah sudah bekerja minimal 12 menit
+        if(this.pekerjaan != null && this.pekerjaan != pekerjaanbaru && durasikerja >= 720){ //cek apakah sudah bekerja minimal 12 menit
             int gajiBaru = pekerjaanbaru.getGaji();
             int setengahGaji = gajiBaru / 2;
             if(this.uang >= setengahGaji){ //cek apakah SIM memiliki cukup uang untuk membayar setengah gaji
                 this.uang -= setengahGaji; //mengurangi uang SIM sebesar setengah gaji pekerjaan baru
                 this.pekerjaan = pekerjaanbaru; //mengganti pekerjaan SIM dengan pekerjaan baru
+                setdurasikerja(0);
+                this.keluarkerja = world.getDay();
                 System.out.println("Pekerjaan berhasil diganti menjadi " + pekerjaanbaru.getNamaPekerjaan() + ".");
             } else {
                 System.out.println("Maaf, uang Anda tidak cukup untuk membayar setengah gaji pekerjaan baru.");
@@ -246,9 +299,9 @@ public class SIM {
     public void kerja(int durasi)  {
         if (status.equals("idle")) {
             if (durasi % 120 == 0) { // validasi kelipatan 120 detik
-                if (waktuMulaiBekerja == null || Duration.between(waktuPenggantianPekerjaan, LocalDateTime.now()).toSeconds() >= 720) { // jika belum pernah bekerja pada pekerjaan ini atau sudah 12 menit setelah penggantian pekerjaan
-                    waktuMulaiBekerja = LocalDateTime.now();
-                    status = "working";
+                status = "working";
+                int currentDay = world.getDay();
+                if((currentDay-keluarkerja > 0)){
                     synchronized (this) {
                         notify();
                     }
@@ -265,15 +318,18 @@ public class SIM {
                         uang += pekerjaan.getGaji();
                         kekenyangan = kekenyangan - (durasi/3);
                         mood = mood - (durasi/3);
+                        durasiTidurdanBuangAir(durasi);
                         cekKesejahteraan();
                         status = "idle";   
                     }
+                    this.durasikerja = durasikerja + durasi;
                 }
-            } else {
-                System.out.println("Durasi kerja harus kelipatan 120 detik.");
             }
+        } else {
+            System.out.println("Durasi kerja harus kelipatan 120 detik.");
         }
     }
+    
     
 
     // Implementasi aksi olahraga
@@ -297,6 +353,7 @@ public class SIM {
                     kekenyangan -= (durasi/4);
                     kesehatan += (durasi/4);
                     mood += (durasi/2);
+                    durasiTidurdanBuangAir(durasi);
                     cekKesejahteraan();
                     status = "idle";   
                 }
@@ -309,36 +366,6 @@ public class SIM {
 
     // Implementasi aksi tidur
     public void tidur(int durasiTidur) {
-        //cek keberadaan kasur
-        boolean KasurKingSizeTersedia= false;
-        boolean KasurQueenSizeTersedia= false;
-        boolean KasurSingleTersedia = false;
-        for (Objek objek : locRuangSim.getDaftarObjek()) {
-            if (objek instanceof KasurKingSize) {
-                KasurKingSizeTersedia = true;
-                break;
-            }
-            else if(objek instanceof KasurQueenSize){
-                KasurQueenSizeTersedia= true;
-                break;
-            }
-            else if(objek instanceof KasurSingle){
-                KasurSingleTersedia = true;
-                break;
-            }
-        }
-        if (!KasurKingSizeTersedia) {
-            System.out.println("Maaf, tidak terdapat KasurKingSize di ruangan ini.");
-            return;
-        }
-        if (!KasurQueenSizeTersedia){
-            System.out.println("Maaf, tidak terdapat KasurQueenSize di ruangan ini.");
-            return;
-        }
-        if(!KasurSingleTersedia){
-            System.out.println("Maaf, tidak terdapat KasurSingle di ruangan ini.");
-            return;
-        }
         if (status.equals("idle")) {
             if(currentobj.equals("KasurKingSize") || currentobj.equals("KasurQueenSize") || currentobj.equals("KasurSingle")){
                 status = "tidur";
@@ -362,87 +389,56 @@ public class SIM {
                     cekKesejahteraan();
                     status = "idle";   
                 }
+                int currentTime = world.getDay() * 720 + world.getTime();
+                setdurasimulaitidur(currentTime);
+                durasiTidurdanBuangAir(durasiTidur);
             }
         }
     }
     
     //implementasi aksi makan
     public void makan(ObjekMakanan makanan){
-        // Cek keberadaan meja dan kursi
-        boolean mejakursiTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
-            if (objek instanceof MejaDanKursi) {
-                mejakursiTersedia = true;
-                break;
-            }
-        }
-        if (!mejakursiTersedia) {
-            System.out.println("Maaf, tidak terdapat meja dan kursi di ruangan ini.");
-            return;
-        }
         if (status.equals("idle") && currentobj.equals("MejadanKursi")) {
             if (inventory.contains(makanan)) {
                 inventory.removeObject(makanan);
+                status = "makan";
+                synchronized (this) {
+                    notify();
+                }
+                try{
+                    int waktuMakan = 30; // Lama waktu makan 
+                    int counter = 0;
+                    for (int i = 0; i < waktuMakan; i++) {
+                        if (counter % 30 == 0){
+                            kekenyangan += makanan.getKekenyangan();
+                        }
+                        // Menunggu sampai waktu mandi selesai
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                finally{
+                    durasiTidurdanBuangAir(30);
+                    cekKesejahteraan();
+                    buangair = false;
+                    mulaimakan = true;
+                    status = "idle";   
+                }
             } else {
                 System.out.println("Tidak ada makanan tersebut di inventory.");
                 status = "idle";
                 return;
             }
-            status = "makan";
-            synchronized (this) {
-                notify();
-            }
-            try{
-                int waktuMakan = (int) (Math.random() * 31) + 30; // Lama waktu makan secara random antara 30-60 detik
-                int counter = 0;
-                for (int i = 0; i < waktuMakan; i++) {
-                    if (counter % 30 == 0){
-                        kekenyangan += makanan.getKekenyangan();
-                    }
-                    // Menunggu sampai waktu mandi selesai
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                // Setelah makan selesai, cek durasi sejak selesai makan sampai buang air
-                long durasiMakan = System.currentTimeMillis()/1000 - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
-                if (durasiMakan > 240) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
-                    int kurang = (int) (durasiMakan / 240); // Hitung berapa kali kurang dalam interval 4 menit
-                    mood -= 5 * kurang;
-                    kesehatan -= 5 * kurang;
-                }
-            }finally{
-                cekKesejahteraan();
-                status = "idle";   
-            }
+            int currentTime = world.getDay()*720 + world.getTime();
+            setdurasimulaimakan(currentTime);
         }
     }
     
 
     public void masak(Masakan menu) {
-        // Cek keberadaan kompor
-        boolean komporgasTersedia = false;
-        boolean komporlistrikTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
-            if (objek instanceof KomporGas) {
-                komporgasTersedia = true;
-                break;
-            }
-            else if (objek instanceof KomporListrik) {
-                komporlistrikTersedia = true;
-                break;
-            }
-        }
-        if (!komporgasTersedia) {
-            System.out.println("Maaf, tidak terdapat kompor di ruangan ini.");
-            return;
-        }
-        if (!komporlistrikTersedia) {
-            System.out.println("Maaf, tidak terdapat kompor di ruangan ini.");
-            return;
-        }
         // Validasi bahan-bahan menu
         boolean bahanTersedia = true;
         for (ObjekMakanan bahan : menu.getListBahan()) {
@@ -459,8 +455,8 @@ public class SIM {
                 synchronized (this) {
                     notify();
                 }
+                int waktuMasak = (int) (1.5 * menu.getKekenyangan());
                 try{
-                    int waktuMasak = (int) (1.5 * menu.getKekenyangan());
                     for (int i = 0; i < waktuMasak; i++) {
                         // Menunggu sampai waktu main selesai
                         try {
@@ -475,6 +471,7 @@ public class SIM {
                     inventory.addObject(menu);
                 }finally{
                     mood += 10;
+                    durasiTidurdanBuangAir(waktuMasak);
                     cekKesejahteraan();
                     status = "idle";   
                 }
@@ -503,6 +500,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktu);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -512,25 +510,13 @@ public class SIM {
     
     // implementasi aksi buang air
     public void buangAir() {
-        // Cek keberadaan toilet
-        boolean ToiletTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
-            if (objek instanceof Toilet) {
-                ToiletTersedia = true;
-                break;
-            }
-        }
-        if (!ToiletTersedia) {
-            System.out.println("Maaf, tidak terdapat toilet di ruangan ini.");
-            return;
-        }
         if (status.equals("idle") && currentobj.equals("Toilet")) {
             status = "BuangAir";
             synchronized (this) {
                 notify();
             }
+            int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
             try{
-                int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
                 int counter = 0;
                 for (int i = 0; i < waktuBuangAir; i++) {
                     if (counter % 10 == 0) { // Setiap 10 detik, kekenyangan berkurang
@@ -545,16 +531,13 @@ public class SIM {
                         e.printStackTrace();
                     }
                 }
-                long durasiMakanDanBuangAir = System.currentTimeMillis() - waktuMakanTerakhir.toEpochSecond(ZoneOffset.UTC);
-                if (durasiMakanDanBuangAir > 240000) { // Jika sudah lewat 4 menit, kurangi mood dan kesehatan
-                    int kurang = (int) (durasiMakanDanBuangAir / 240000); // Hitung berapa kali kurang dalam interval 4 menit
-                    mood -= 5 * kurang;
-                    kesehatan -= 5 * kurang;
-                }
             }finally{
                 cekKesejahteraan();
                 status = "idle";   
             }
+            int currentTime = world.getDay() * 720 + world.getTime() + waktuBuangAir;
+            world.addTime(waktuBuangAir);
+            buangair = true;
         }
     }
 
@@ -579,20 +562,14 @@ public class SIM {
     
     //implementasi aksi melihat waktu
     public void melihatWaktu(){
-        // Cek keberadaan toilet
-        boolean jamTersedia = false;
-        for (ObjekNonMakanan objek : locRuangSim.getDaftarObjek()) {
-            if (objek instanceof Jam) {
-                jamTersedia = true;
-                break;
-            }
+        if (currentobj.equals("Jam")) {
+            int waktu = world.getTime();
+            System.out.println("Sekarang hari ke -  " + world.getDay());
+            System.out.println("Waktu Sekarang : " + waktu);
         }
-        if (!jamTersedia && currentobj.equals("Jam")) {
-            System.out.println("Maaf, tidak terdapat jam di ruangan ini.");
-            return;
+        else{
+            System.out.println("Maaf, pindah ke jam di ruangan ini dulu.");
         }
-        System.out.println("Sekarang jam " + currentTime.displayHMS());
-        System.out.println("Sisa waktu " + currentTime.remainingTime());
     }
 
     //implementasi aksi mandi
@@ -602,8 +579,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuMandi = 10;
             try{
-                float waktuMandi = 10;
                 for (int i = 0; i < waktuMandi; i++) {
                     kekenyangan -= 0.5;
                     mood += 1;
@@ -615,6 +592,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuMandi);
                 cekKesejahteraan();
                 status = "idle";   
             }      
@@ -628,8 +606,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuMain = 10;
             try{
-                int waktuMain = 10;
                 for (int i = 0; i < waktuMain; i++) {
                     mood += 1;
                     kekenyangan -= 0.5;
@@ -642,6 +620,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuMain);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -655,8 +634,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuNonton = 10;
             try{
-                int waktuNonton = 10;
                 for (int i = 0; i < waktuNonton; i++) {
                     mood += 1.5;
                     kekenyangan -= 0.5;
@@ -668,6 +647,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuNonton);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -681,8 +661,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuMembaca = 10;
             try{
-                int waktuMembaca = 10;
                 for (int i = 0; i < waktuMembaca; i++) {
                     mood += 1;
                     kekenyangan -= 0.5;
@@ -694,6 +674,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuMembaca);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -707,8 +688,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktumembersihkanRuangan = 10;
             try{
-                int waktumembersihkanRuangan = 10;
                 for (int i = 0; i < waktumembersihkanRuangan; i++) {
                     mood += 1;
                     kekenyangan -= 1;
@@ -720,6 +701,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktumembersihkanRuangan);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -733,8 +715,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuMeditasi = 10;
             try{
-                int waktuMeditasi = 10;
                 for (int i = 0; i < waktuMeditasi; i++) {
                     kesehatan += 1;
                     kekenyangan -= 0.5;
@@ -746,6 +728,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuMeditasi);
                 cekKesejahteraan();
                 status = "idle";   
             }
@@ -759,8 +742,8 @@ public class SIM {
             synchronized (this) {
                 notify();
             }
+            int waktuBelajar = 10;
             try{
-                int waktuBelajar = 10;
                 for (int i = 0; i < waktuBelajar; i++) {
                     mood += 0.5;
                     kekenyangan -= 0.5;
@@ -773,6 +756,7 @@ public class SIM {
                     }
                 }
             }finally{
+                durasiTidurdanBuangAir(waktuBelajar);
                 cekKesejahteraan();
                 status = "idle";   
             }
