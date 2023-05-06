@@ -28,7 +28,7 @@ public class SIM{
     private Ruangan locRuangSim;
     private String currentobj;
     private Object kunci = World.getInstance().getLock();
-    public ReentrantLock lock = new ReentrantLock();
+    private ReentrantLock lock = new ReentrantLock();
     private boolean isAlive;
 
     public SIM(String namaLengkap){
@@ -59,6 +59,52 @@ public class SIM{
             default:
                 break;
         }
+    }
+
+    public boolean isSIMAlive() {
+        return isAlive;
+    }
+
+    public void setSIMLock(ReentrantLock lock) {
+        this.lock = lock;
+    }
+
+    public void setSIMkunci() {
+        World.getInstance().getLock();
+    }
+    public void setSIMAlive(boolean isAlive) {
+        this.isAlive = isAlive;
+    }
+    public int getKeluarKerja() {
+        return keluarkerja;
+    }
+
+    public void setKeluarKerja(int keluarkerja) {
+        this.keluarkerja = keluarkerja;
+    }
+
+    public boolean isBuangAir() {
+        return buangair;
+    }
+
+    public void setBuangAir(boolean buangair) {
+        this.buangair = buangair;
+    }
+
+    public String getCurrentObj() {
+        return currentobj;
+    }
+
+    public void setCurrentObj(String obj) {
+        this.currentobj = obj;
+    }
+
+    public boolean isMulaiMakan() {
+        return mulaimakan;
+    }
+
+    public void setMulaiMakan(boolean mulaimakan) {
+        this.mulaimakan = mulaimakan;
     }
 
     public String getNamaLengkap() {

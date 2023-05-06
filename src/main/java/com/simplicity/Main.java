@@ -14,7 +14,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.*;
 import java.lang.*;
-// import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Main{
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
@@ -439,7 +440,7 @@ public class Main{
                         String aksi = scan.nextLine();
                         switch (aksi){
                             case "save sim":
-                                serializeToJSON(sims);
+                                serializeToJson(sims);
                             case "beli makan":
                                 System.out.println("list barang dan harga");
                                 System.out.println("1. nasi 5");
@@ -779,24 +780,23 @@ public class Main{
                 }
         }
     }
-    //ArrayList<SIM> sims = new ArrayList<>();
-    private static void serializeToJSON(ArrayList<SIM> sim) {
+    private static void serializeToJson(ArrayList<SIM> sims) {
         Gson gson = new Gson();
-        try (FileWriter writer = new FileWriter("sim.json")) {
-            String json = gson.toJson(sim);
+        try (FileWriter writer = new FileWriter("SIM.json")) {
+            String json = gson.toJson(sims);
             writer.write(json);
-            System.out.println("JSON data saved to sim.json");
+            System.out.println("JSON data saved to SIM.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static ArrayList<SIM> deserializeFromJSON() {
+    private static ArrayList<SIM> deserializeFromJson() {
         Gson gson = new Gson();
-        try (FileReader reader = new FileReader("sim.json")) {
+        try (FileReader reader = new FileReader("SIM.json")) {
             System.out.println("Save game berhasil diload!");
-            ArrayList<SIM> sim = gson.fromJson(reader, new TypeToken<ArrayList<SIM>>() {}.getType());
-            return sim;
+            ArrayList<SIM> sims = gson.fromJson(reader, new TypeToken<ArrayList<SIM>>() {}.getType());
+            return sims;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
