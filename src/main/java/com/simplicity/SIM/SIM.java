@@ -299,7 +299,8 @@ public class SIM{
                         mood = mood - (durasi/3);
                         durasiTidurdanBuangAir(durasi);
                         cekKesejahteraan();
-                        status = "idle";   
+                        status = "idle";
+                        World.getInstance().setTime(World.getInstance().getTime()+durasi);   
                     }
                     synchronized (kunci) {
                         kunci.notifyAll();
@@ -372,7 +373,8 @@ public class SIM{
                 }finally{
                     lock.unlock();
                     cekKesejahteraan();
-                    status = "idle";   
+                    status = "idle";
+                    World.getInstance().setTime(World.getInstance().getTime()+durasiTidur);   
                 }
                 synchronized (kunci) {
                     kunci.notifyAll();
@@ -412,7 +414,8 @@ public class SIM{
                     cekKesejahteraan();
                     buangair = false;
                     mulaimakan = true;
-                    status = "idle";   
+                    status = "idle";
+                    World.getInstance().setTime(World.getInstance().getTime()+waktuMakan);   
                 }
                 synchronized (kunci) {
                     kunci.notifyAll();
@@ -462,7 +465,8 @@ public class SIM{
                     mood += 10;
                     durasiTidurdanBuangAir(waktuMasak);
                     cekKesejahteraan();
-                    status = "idle";   
+                    status = "idle";
+                    World.getInstance().setTime(World.getInstance().getTime()+waktuMasak);   
                 }
                 synchronized (kunci) {
                     kunci.notifyAll();
@@ -493,7 +497,8 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktu);
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle";
+                World.getInstance().setTime(World.getInstance().getTime()+waktu);   
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -526,7 +531,8 @@ public class SIM{
             }finally{
                 lock.unlock();
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle"; 
+                World.getInstance().setTime(World.getInstance().getTime()+waktuBuangAir);  
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -588,6 +594,7 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktuMandi);
                 cekKesejahteraan();
+                World.getInstance().setTime(World.getInstance().getTime()+waktuMandi);
                 status = "idle";   
             }     
             synchronized (kunci) {
@@ -618,6 +625,7 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktuMain);
                 cekKesejahteraan();
+                World.getInstance().setTime(World.getInstance().getTime()+waktuMain);
                 status = "idle";   
             }
             synchronized (kunci) {
@@ -647,7 +655,8 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktuNonton);
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle";
+                World.getInstance().setTime(World.getInstance().getTime()+waktuNonton);   
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -676,7 +685,8 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktuMembaca);
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle"; 
+                World.getInstance().setTime(World.getInstance().getTime()+waktuMembaca);  
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -705,7 +715,8 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktumembersihkanRuangan);
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle"; 
+                World.getInstance().setTime(World.getInstance().getTime()+waktumembersihkanRuangan);  
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -734,7 +745,8 @@ public class SIM{
                 lock.unlock();
                 durasiTidurdanBuangAir(waktuMeditasi);
                 cekKesejahteraan();
-                status = "idle";   
+                status = "idle"; 
+                World.getInstance().setTime(World.getInstance().getTime()+waktuMeditasi);  
             }
             synchronized (kunci) {
                 kunci.notifyAll();
@@ -765,6 +777,7 @@ public class SIM{
                 durasiTidurdanBuangAir(waktuBelajar);
                 cekKesejahteraan();
                 status = "idle";   
+                World.getInstance().setTime(World.getInstance().getTime()+waktuBelajar);
             }
             synchronized (kunci) {
                 kunci.notifyAll();
