@@ -11,6 +11,7 @@ import java.lang.*;
 import java.util.concurrent.locks.ReentrantLock;
 public class Main{
     public static void main(String[] args) {
+        
         Scanner scan = new Scanner(System.in);
         boolean ingame = false;
         boolean status = false;
@@ -22,6 +23,7 @@ public class Main{
         World dunia = World.getInstance();
         int count = 0;
         int last = 0;
+        
         while (!status) {
             if (dunia.getTime()>=720){
                 dunia.setDay(dunia.getDay()+1);
@@ -31,6 +33,7 @@ public class Main{
             String command = scan.nextLine();
             switch (command){
                 case "start game" :
+                    
                     if (count == 0) {
                         System.out.println("mulai");
                         count = 1;
@@ -58,6 +61,7 @@ public class Main{
                                 }
                             }
                         }
+  
                         rumah= new Rumah(locX,locY,sim.getNamaLengkap());
                         dunia.addRumah(rumah);
                         sim.setLocRuanganSim(rumah.getKamar());
@@ -492,7 +496,7 @@ public class Main{
                                     System.out.println("5. programmer");
                                     System.out.printf("masukkan nomor pekerjaan yang dipilih: ");
                                     String pekerjaan = scan.nextLine();
-                                    scan.nextLine();
+                                    
                                     switch (pekerjaan){
                                         case "1":
                                             BadutSulap badut = new BadutSulap();
