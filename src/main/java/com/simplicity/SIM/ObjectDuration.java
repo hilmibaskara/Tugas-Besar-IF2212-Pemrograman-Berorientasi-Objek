@@ -34,7 +34,7 @@ public class ObjectDuration extends Thread{
         synchronized(sim.getInventory()){
             // Tambahkan barang ke inventory
             sim.getInventory().addObject(barang);
-            sim.getInventory().addObject(barang);
+            
         }
     }
 }
