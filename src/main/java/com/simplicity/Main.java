@@ -625,7 +625,6 @@ public class Main{
                                     System.out.println("5. bistik");
                                     System.out.printf("masukkan nomor masakan yang dipilih: ");
                                     String masakan = scan.nextLine();
-                                    scan.nextLine();
                                     switch (masakan) {
                                         case "1":
                                             NasiAyam nasiayam = new NasiAyam();
