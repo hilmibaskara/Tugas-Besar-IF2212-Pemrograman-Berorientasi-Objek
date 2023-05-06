@@ -269,8 +269,7 @@ public class Main{
                     }
                     break;
                 case "add sim":       
-                    System.out.println(last);
-                    System.out.println(dunia.getDay());         
+                  
                     boolean sabi = false;
                     if(sims.size()==1){
                         sabi = true;
