@@ -389,8 +389,15 @@ public class SIM{
     //implementasi aksi makan
     public void makan(ObjekMakanan makanan){
         if (status.equals("idle") && currentobj.equals("MejadanKursi")) {
-            if (inventory.contains(makanan)) {
-                inventory.removeObject(makanan);
+            boolean ada = false;
+            for(int i=0;i<inventory.getObjects().size();i++){
+                if(inventory.getObjects().get(i).getNama().equals(makanan.getNama())){
+                    ada = true;
+                    inventory.removeObject(inventory.getObjects().get(i));
+                    break;
+                }
+            }
+            if (ada) {
                 status = "makan";
                 lock.lock();
                 int waktuMakan = 30; // Lama waktu makan 
@@ -428,22 +435,37 @@ public class SIM{
             int currentTime = world.getDay()*720 + world.getTime();
             setdurasimulaimakan(currentTime);
         }
+        else{
+            System.out.println("posisi SIM belum di meja");
+        }
     }
     
 
     public void masak(Masakan menu) {
         // Validasi bahan-bahan menu
-        boolean bahanTersedia = true;
+        boolean bahanTersedia = false;
         for (ObjekMakanan bahan : menu.getListBahan()) {
-            if (!inventory.contains(bahan)) {
-                System.out.println("Maaf, " + bahan + " tidak tersedia dalam inventory.");
-                bahanTersedia = false;
-                break;
+            for(int i = 0;i<inventory.getObjects().size();i++){
+                if (inventory.getObjects().get(i).getNama().equals(bahan.getNama())){
+                    bahanTersedia=true;
+                    break;
+                }
+                else{
+                    bahanTersedia=false;
+                }
             }
         }
         // Jika semua bahan tersedia, maka mulai memasak
-        if (bahanTersedia && currentobj.equals("komporgas") || currentobj.equals("koporlistrik")) {
+        if (bahanTersedia && currentobj.equals("komporgas") || currentobj.equals("komporlistrik")) {
             if (status.equals("idle")) {
+                for (ObjekMakanan bahan : menu.getListBahan()) {
+                    for(int i = 0;i<inventory.getObjects().size();i++){
+                        if (inventory.getObjects().get(i).getNama().equals(bahan.getNama())){
+                            inventory.removeObject(inventory.getObjects().get(i));
+                            break;
+                        }
+                    }
+                }
                 status = "masak";
                 lock.lock();
                 int waktuMasak = (int) (1.5 * menu.getKekenyangan());
@@ -473,6 +495,7 @@ public class SIM{
                 }
             }
         }
+        System.out.println("SIM tidak berada di kompor atau bahan masakan tidak ada");
     }
 
     public void berkunjung(int x1, int y1, int x2, int y2) {
