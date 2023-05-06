@@ -495,7 +495,9 @@ public class SIM{
                 }
             }
         }
-        System.out.println("SIM tidak berada di kompor atau bahan masakan tidak ada");
+        else{
+            System.out.println("SIM tidak berada di kompor atau bahan masakan tidak ada");
+        }
     }
 
     public void berkunjung(int x1, int y1, int x2, int y2) {
