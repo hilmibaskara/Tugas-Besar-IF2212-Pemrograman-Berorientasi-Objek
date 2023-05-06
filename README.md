@@ -13,7 +13,7 @@ Sim-Plicity merupakan permainan yang menyerupai dengan game populer yaitu The Si
 
 # Compile and Run
 
-Project ini menggunakan Gradle sebagai build tool. Pelajari lebih lanjut mengenai Gradle di [sini](https://docs.gradle.org/current/userguide/userguide.html)
+Project ini menggunakan Gradle sebagai build tool. Pelajari lebih lanjut mengenai Gradle di [sini](https://docs.gradle.org/current/userguide/userguide.html).\
 Untuk compile program, buka directory project lalu ketik
 ```
 gradle run
