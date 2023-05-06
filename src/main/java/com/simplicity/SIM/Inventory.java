@@ -79,8 +79,16 @@ public class Inventory {
             System.out.println("Masukan nomor aksi yang diinginkan:");
             
             int choice = scan.nextInt();
-            System.out.println();
+            
             if (choice ==1 ){
+                i=1;
+                System.out.println("List Objek: ");
+                for (Map.Entry<Objek, Integer> entry : objekCountMap.entrySet()) {
+                    Objek objek = entry.getKey();
+                    int amount = entry.getValue();
+                    System.out.println(i + ". " + objek.getNama() + " (" + amount + ")");
+                    i++;
+                }
                 System.out.println("Pilih nomor objek yang ingin digunakan: ");
                 int pasang = scan.nextInt();
                 System.out.println();
@@ -217,6 +225,12 @@ public class Inventory {
                     }
                     
                 }
+            }
+            else if(choice ==2  ){
+                
+            }
+            else {
+                System.out.println("command salah");
             }
         }
 
