@@ -28,7 +28,7 @@ public class SIM{
     private Ruangan locRuangSim;
     private String currentobj;
     private Object kunci = World.getInstance().getLock();
-    private ReentrantLock lock = new ReentrantLock();
+    public ReentrantLock lock = new ReentrantLock();
     private boolean isAlive;
 
     public SIM(String namaLengkap){

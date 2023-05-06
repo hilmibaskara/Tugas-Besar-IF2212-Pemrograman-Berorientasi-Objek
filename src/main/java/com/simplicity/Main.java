@@ -6,9 +6,15 @@ import com.simplicity.World.*;
 import com.simplicity.Objek.*;
 import com.simplicity.Job.*;
 
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.util.*;
 import java.lang.*;
-import java.util.concurrent.locks.ReentrantLock;
+// import java.util.concurrent.locks.ReentrantLock;
 public class Main{
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
@@ -428,9 +434,12 @@ public class Main{
                         System.out.println("16. bersihkan ruangan");
                         System.out.println("17. meditasi");
                         System.out.println("18. belajar");
+                        System.out.println("19. save sim");
                         System.out.printf("masukkan aksi yang ingin dilakukan: ");
                         String aksi = scan.nextLine();
                         switch (aksi){
+                            case "save sim":
+                                serializeToJSON(sims);
                             case "beli makan":
                                 System.out.println("list barang dan harga");
                                 System.out.println("1. nasi 5");
@@ -768,6 +777,29 @@ public class Main{
                     System.out.println("ketik \"help\" untuk melihat list command");
                     break;
                 }
+        }
+    }
+    //ArrayList<SIM> sims = new ArrayList<>();
+    private static void serializeToJSON(ArrayList<SIM> sim) {
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter("sim.json")) {
+            String json = gson.toJson(sim);
+            writer.write(json);
+            System.out.println("JSON data saved to sim.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static ArrayList<SIM> deserializeFromJSON() {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader("sim.json")) {
+            System.out.println("Save game berhasil diload!");
+            ArrayList<SIM> sim = gson.fromJson(reader, new TypeToken<ArrayList<SIM>>() {}.getType());
+            return sim;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
