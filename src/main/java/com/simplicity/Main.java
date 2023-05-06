@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.*;
@@ -440,7 +441,17 @@ public class Main{
                         String aksi = scan.nextLine();
                         switch (aksi){
                             case "save sim":
-                                serializeToJson(sims);
+                                // serializeToJson(sims);
+                                // Gson gson = new GsonBuilder().registerTypeAdapter(SIM.class, new SIMTypeAdapter()).create();
+                                
+                                try (FileWriter writer = new FileWriter("SIM.json")) {
+                                    
+                                    String json = gson.toJson(sims);
+                                    writer.write(json);
+                                    System.out.println("JSON data saved to SIM.json");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             case "beli makan":
                                 System.out.println("list barang dan harga");
                                 System.out.println("1. nasi 5");
