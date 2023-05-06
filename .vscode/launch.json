@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Inventory",
+      "request": "launch",
+      "mainClass": "com.simplicity.SIM.Inventory",
+      "projectName": "Tugas-Besar-IF2212-Pemrograman-Berorientasi-Objek"
+    },
+    {
+      "type": "java",
       "name": "Main",
       "request": "launch",
       "mainClass": "com.simplicity.Main",
