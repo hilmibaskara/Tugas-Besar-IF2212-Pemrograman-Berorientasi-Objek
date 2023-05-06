@@ -132,6 +132,8 @@ public class Main{
                 case "inventory":
                     if (ingame){
                         sim.melihatInventory();
+                        
+                        
                     }
                     else{
                         System.out.println("permainan belum dimulai");
@@ -680,45 +682,65 @@ public class Main{
                                             System.out.printf("masukkan koordinat y: ");
                                             int ypasang = scan.nextInt();
                                             scan.nextLine();
+                                            
                                             if(inventory.getObjects().get(pasang-1).getNama().equals("Meja dan Kursi")){
                                                 MejaDanKursi mejakursi = new MejaDanKursi();
-                                                sim.pasangBarang(mejakursi,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(mejakursi,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
+                                                
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Kompor Listrik")){
                                                 KomporListrik komporlistrik = new KomporListrik();
-                                                sim.pasangBarang(komporlistrik,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(komporlistrik,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
+                                                
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Kompor Gas")){
                                                 KomporGas komporgas = new KomporGas();
-                                                sim.pasangBarang(komporgas,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(komporgas,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Toilet")){
                                                 Toilet toilet = new Toilet();
-                                                sim.pasangBarang(toilet,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats= sim.pasangBarang(toilet,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
+                                                
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Jam")){
                                                 Jam jam = new Jam();
-                                                sim.pasangBarang(jam,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(jam,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur Single")){
                                                 KasurSingle kasursingle = new KasurSingle();
-                                                sim.pasangBarang(kasursingle,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(kasursingle,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur King Size")){
                                                 KasurKingSize kasurkingsize = new KasurKingSize();
-                                                sim.pasangBarang(kasurkingsize,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats= sim.pasangBarang(kasurkingsize,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
                                             }
                                             else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur Queen Size")){
                                                 KasurQueenSize kasurqueen = new KasurQueenSize();
-                                                sim.pasangBarang(kasurqueen,xpasang,ypasang);
-                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                boolean stats = sim.pasangBarang(kasurqueen,xpasang,ypasang);
+                                                if(stats){
+                                                    inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                                }
                                             }
                                         }
                                         else{

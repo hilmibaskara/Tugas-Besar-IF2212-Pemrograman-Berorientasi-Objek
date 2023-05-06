@@ -571,10 +571,17 @@ public class SIM{
     }
     
     //implementasi aksi memasang barang
-    public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
+    public boolean pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
         //menambahkan objek
-        locRuangSim.tambahObjek(namaBarang, x, y);
-        System.out.println("Barang " + namaBarang.getNama() + " telah dipasang pada posisi " + x + "," + y);
+        boolean stats = locRuangSim.tambahObjek(namaBarang, x, y);
+        if (stats == false) {
+            System.out.println("Objek tidak dapat dipasang pada posisi tersebut.");
+            return stats;
+        }
+        else{System.out.println("Barang " + namaBarang.getNama() + " telah dipasang pada posisi " + x + "," + y);
+    return stats;}
+    
+        
     }
 
     //implementasi aksi berpindah ruangan

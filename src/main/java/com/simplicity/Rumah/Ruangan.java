@@ -54,7 +54,7 @@ public class Ruangan {
     }
 
     // method nambah objek, x & y merupakan koordinat paling kiri atas
-    public void tambahObjek(ObjekNonMakanan obj, int x, int y) {
+    public boolean tambahObjek(ObjekNonMakanan obj, int x, int y) {
 
         // status untuk mengecek apakah ada objek di tempat yang sama
         boolean status = true;
@@ -80,9 +80,11 @@ public class Ruangan {
         // status false = ada objek lain di tempat yang seharusnya ditaro
         if (!status) {
             System.out.println("Objek tidak dapat ditambahkan! Posisi sudah diisi oleh objek lain!");
+
             if (!idx_bound) {
                 System.out.println("Koordinat tidak valid atau ruangan tidak cukup!");
             }
+            return status;
         } else {
             for (int i = x-1; i < obj.getPanjang()+x-1; i++) {
                 for (int j = y-1; j < obj.getLebar()+y-1; j++) {
@@ -92,6 +94,7 @@ public class Ruangan {
             daftarObjek.add(obj);
             Point point = new Point(x,y);
             objekMap.put(obj,point);
+            return status;
         }
     }
 
