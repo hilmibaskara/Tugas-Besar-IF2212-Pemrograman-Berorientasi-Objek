@@ -10,6 +10,7 @@ public class Inventory {
     private boolean status;
     private int capacity;
     Scanner scan = new Scanner(System.in);
+    
     public Inventory(SIM owner) {
         this.owner = owner;
         this.capacity = 100;
@@ -75,12 +76,14 @@ public class Inventory {
             System.out.println("List Aksi:");
             System.out.println("1. Gunakan Objek");
             System.out.println("2. Leave");
-
             System.out.println("Masukan nomor aksi yang diinginkan:");
+            
             int choice = scan.nextInt();
+            System.out.println();
             if (choice ==1 ){
                 System.out.println("Pilih nomor objek yang ingin digunakan: ");
                 int pasang = scan.nextInt();
+                System.out.println();
                 Objek objek = (Objek) objekCountMap.keySet().toArray()[pasang - 1];
                 if (objek instanceof ObjekNonMakanan)
                 {
@@ -161,11 +164,12 @@ public class Inventory {
                     owner.makan((ObjekMakanan)objek);
                 }
                 else {
+                    System.out.println("List Aksi:");
                     System.out.println("1. makan");
                     System.out.println("2. masak");
                     System.out.println("Pilih aksi yang ingin dilakukan: ");
                     int pilihan = scan.nextInt();
-
+                    System.out.println();
                     // System.out.println("3. buang");
                     if (pilihan==1){
                         owner.makan((ObjekMakanan)objek);
