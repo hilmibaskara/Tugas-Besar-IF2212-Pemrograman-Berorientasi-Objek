@@ -2,6 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "com.simplicity.Main",
+      "projectName": "Tugas-Besar-IF2212-Pemrograman-Berorientasi-Objek"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "main.java.com.simplicity.Main",
+      "projectName": "Tugas-Besar-IF2212-Pemrograman-Berorientasi-Objek_5b1a408a"
+    },
+    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
