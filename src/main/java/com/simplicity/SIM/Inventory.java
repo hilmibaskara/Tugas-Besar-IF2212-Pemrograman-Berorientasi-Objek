@@ -6,14 +6,13 @@ import com.simplicity.Objek.*;
 import java.util.*;
 public class Inventory {
     private SIM owner;
-    private ArrayList<Objek> objects;
+    private ArrayList<Objek> objects = new ArrayList<>();
     private boolean status;
     private int capacity;
 
     public Inventory(SIM owner) {
         this.owner = owner;
         this.capacity = 100;
-        this.objects = new ArrayList<Objek>();
         this.status = false;
     }
 
@@ -57,7 +56,7 @@ public class Inventory {
     }
 
     public void printInventory() {
-        System.out.println("Inventory milik " + getOwner() + ":");
+        System.out.println("Inventory milik " + getOwner().getNamaLengkap() + ":");
         Map<Objek, Integer> objekCountMap = new HashMap<>();
         for (Objek objek : objects) {
             objekCountMap.put(objek, objekCountMap.getOrDefault(objek, 0) + 1);

@@ -7,7 +7,9 @@ import com.simplicity.Objek.*;
 import com.simplicity.Job.*;
 
 import java.util.*;
-public class Main {
+import java.lang.*;
+import java.util.concurrent.locks.ReentrantLock;
+public class Main{
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         boolean ingame = false;
@@ -17,9 +19,14 @@ public class Main {
         SIM sim = new SIM("dummy");
         Inventory inventory = new Inventory(sim);
         Rumah rumah = new Rumah(0, 0, "dummy");
-        World dunia = new World();
+        World dunia = World.getInstance();
         int count = 0;
+        int last = 0;
         while (!status) {
+            if (dunia.getTime()>=720){
+                dunia.setDay(dunia.getDay()+1);
+                dunia.setTime(dunia.getTime()-720);
+            }
             System.out.printf("masukkan command: ");
             String command = scan.nextLine();
             switch (command){
@@ -29,7 +36,7 @@ public class Main {
                         count = 1;
                         ingame = true;
 
-                        dunia = new World();
+                        dunia = World.getInstance();
                         for (int x = 0; x < 64; x++) {
                             for (int y = 0; y < 64; y++) {
                                 dunia.setObject(x,y,false);
@@ -69,6 +76,7 @@ public class Main {
                         sim.pasangBarang(mejakursi,2,3);
                         sim.pasangBarang(jam,4,6);
                         sim.setInventory(inventory);
+                        sim.setWorld(dunia);
                     }
                     else{
                         System.out.println("game sudah dimulai");
@@ -99,7 +107,7 @@ public class Main {
                     if (ingame){
                         System.out.println("info dari sim");
                         System.out.println("1. Nama Lengkap: " + sim.getNamaLengkap());
-                        System.out.println("2. Pekerjaan: " + sim.getPekerjaan());
+                        System.out.println("2. Pekerjaan: " + sim.getPekerjaan().getNamaPekerjaan());
                         System.out.println("3. Uang: " + sim.getUang());
                         System.out.println("4. Kekenyangan: " + sim.getKekenyangan() );
                         System.out.println("5. Mood: " + sim.getMood() );
@@ -231,6 +239,7 @@ public class Main {
                                 sim.getLocRuanganSim().printListObjekRuangan();
                                 System.out.printf("masukkan nomor objek yang ingin dipindah : ");
                                 int pindahbarang = scan.nextInt();
+                                scan.nextLine();
                                 if (pindahbarang > 0 && pindahbarang <= sim.getLocRuanganSim().getDaftarObjek().size()) {
                                     System.out.printf("masukkan x baru : ");
                                     int xbaru =scan.nextInt();
@@ -238,6 +247,9 @@ public class Main {
                                     int ybaru = scan.nextInt();
                                     sim.getLocRuanganSim().pindahObjek(sim.getLocRuanganSim().getDaftarObjek().get(pindahbarang-1),xbaru,ybaru);
                                     scan.nextLine();
+                                }
+                                else{
+                                    System.out.println("command salah");
                                 }
                                 break;
                             default:
@@ -250,8 +262,19 @@ public class Main {
                         System.out.println("permainan belum dimulai atau SIM tidak berada di ruangan");
                     }
                     break;
-                case "add sim":
-                    if (ingame){
+                case "add sim":       
+                    System.out.println(last);
+                    System.out.println(dunia.getDay());         
+                    boolean sabi = false;
+                    if(sims.size()==1){
+                        sabi = true;
+                    }
+                    
+                    else if(sims.size()>=2 && dunia.getDay()>last){
+                        sabi = true;
+                    }
+
+                    if (ingame && sabi){
                         System.out.printf("Masukkan nama lengkap SIM :");
                         command = scan.nextLine();
                         int ada = 0;
@@ -288,10 +311,25 @@ public class Main {
                             simbaru.setInventory(inventorybaru);
                             inventorylist.add(inventorybaru);
                             System.out.println("SIM berhasil ditambahkan");
+                            last = dunia.getDay();
+                            KasurSingle kasur = new KasurSingle();
+                            KomporGas kompor = new KomporGas();
+                            Toilet toilet = new Toilet();
+                            MejaDanKursi mejakursi = new MejaDanKursi();
+                            Jam jam = new Jam();
+                            simbaru.setLocRuanganSim(rumahbaru.getKamar());
+                            simbaru.setLocRumahSim(rumahbaru);
+                            simbaru.pasangBarang(kasur,1,1);
+                            simbaru.pasangBarang(kompor,1,6);
+                            simbaru.pasangBarang(toilet,6,6);
+                            simbaru.pasangBarang(mejakursi,2,3);
+                            simbaru.pasangBarang(jam,4,6);
+                            simbaru.setInventory(inventory);
+                            simbaru.setWorld(dunia);
                         }
                     }
                     else{
-                        System.out.println("permainan belum dimulai");
+                        System.out.println("permainan belum dimulai atau day belum lewat satu hari");
                     }
                     break;
                 case "change sim":
@@ -480,22 +518,22 @@ public class Main {
                                     }
                                     break;
                                 case "kerja":
-                                    System.out.print("masukkan durasi kerja (kelipatan 120 detik) :");
+                                    System.out.printf("masukkan durasi kerja:");
                                     int durasi = scan.nextInt();
-                                    scan.nextLine();
                                     sim.kerja(durasi);
+                                    scan.nextLine();
                                     break;
                                 case "olahraga":
-                                    System.out.print("masukkan durasi olahraga :");
+                                    System.out.printf("masukkan durasi olahraga:");
                                     durasi = scan.nextInt();
-                                    scan.nextLine();
                                     sim.olahraga(durasi);
+                                    scan.nextLine();
                                     break;
                                 case "tidur":
-                                    System.out.print("masukkan durasi tidur :");
+                                    System.out.printf("masukkan durasi tidur:");
                                     durasi = scan.nextInt();
-                                    scan.nextLine();
                                     sim.tidur(durasi);
+                                    scan.nextLine();
                                     break;
                                 case "makan":
                                     System.out.println("list makanan");
@@ -620,66 +658,75 @@ public class Main {
                                     x2 = rumahtujuan.getHouseLocX();
                                     y1 = rumah.getHouseLocY();
                                     y2 = rumahtujuan.getHouseLocY();
+                                    sim.setLocRuanganSim(rumahtujuan.getKamar());
+                                    sim.setLocRumahSim(rumahtujuan);
                                     sim.berkunjung(x1,y1,x2,y2);
                                     break;
                                 case "buang air":
                                     sim.buangAir();
                                     break;
                                 case "pasang barang":
-                                    System.out.println("list barang");
-                                    System.out.println("1. kasur single ");
-                                    System.out.println("2. kasur queen size ");
-                                    System.out.println("3. kasur king size ");
-                                    System.out.println("4. toilet ");
-                                    System.out.println("5. kompor gas ");
-                                    System.out.println("6. kompor listrik ");
-                                    System.out.println("7. meja dan kursi ");
-                                    System.out.println("8. jam ");
+                                    System.out.println("inventory");
+                                    for (int i = 0; i < inventory.getObjects().size(); i++) {
+                                        System.out.println((i+1) + ". " + inventory.getObjects().get(i).getNama());
+                                    }
                                     System.out.printf("masukkan nomor pilihan: ");
-                                    String pasang = scan.nextLine();
-                                    scan.nextLine();
-                                    System.out.printf("masukkan koordinat x: ");
-                                    int xpasang = scan.nextInt();
-                                    scan.nextLine();
-                                    System.out.printf("masukkan koordinat y: ");
-                                    int ypasang = scan.nextInt();
-                                    scan.nextLine();
-                                    switch (pasang){
-                                        case "1":
-                                            KasurSingle kasursingle = new KasurSingle();
-                                            sim.pasangBarang(kasursingle,xpasang,ypasang);
-                                            break;
-                                        case "2":
-                                            KasurQueenSize kasurqueen = new KasurQueenSize();
-                                            sim.pasangBarang(kasurqueen,xpasang,ypasang);
-                                            break;
-                                        case "3":
-                                            KasurKingSize kasurking = new KasurKingSize();
-                                            sim.pasangBarang(kasurking,xpasang,ypasang);
-                                            break;
-                                        case "4":
-                                            Toilet toilet = new Toilet();
-                                            sim.pasangBarang(toilet,xpasang,ypasang);
-                                            break;
-                                        case "5":
-                                            KomporGas komporgas = new KomporGas();
-                                            sim.pasangBarang(komporgas,xpasang,ypasang);
-                                            break;
-                                        case "6":
-                                            KomporListrik komporlistrik = new KomporListrik();
-                                            sim.pasangBarang(komporlistrik,xpasang,ypasang);
-                                            break;
-                                        case "7":
-                                            MejaDanKursi mejakursi = new MejaDanKursi();
-                                            sim.pasangBarang(mejakursi,xpasang,ypasang);
-                                            break;
-                                        case "8":
-                                            Jam jam = new Jam();
-                                            sim.pasangBarang(jam,xpasang,ypasang);
-                                            break; 
-                                        default:
+                                    int pasang = scan.nextInt();
+                                    if (pasang>0 && pasang<=inventory.getObjects().size()){
+                                        if(inventory.getObjects().get(pasang-1) instanceof ObjekNonMakanan){
+                                            System.out.printf("masukkan koordinat x: ");
+                                            int xpasang = scan.nextInt();
+                                            scan.nextLine();
+                                            System.out.printf("masukkan koordinat y: ");
+                                            int ypasang = scan.nextInt();
+                                            scan.nextLine();
+                                            if(inventory.getObjects().get(pasang-1).getNama().equals("Meja dan Kursi")){
+                                                MejaDanKursi mejakursi = new MejaDanKursi();
+                                                sim.pasangBarang(mejakursi,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Kompor Listrik")){
+                                                KomporListrik komporlistrik = new KomporListrik();
+                                                sim.pasangBarang(komporlistrik,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Kompor Gas")){
+                                                KomporGas komporgas = new KomporGas();
+                                                sim.pasangBarang(komporgas,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Toilet")){
+                                                Toilet toilet = new Toilet();
+                                                sim.pasangBarang(toilet,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Jam")){
+                                                Jam jam = new Jam();
+                                                sim.pasangBarang(jam,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur Single")){
+                                                KasurSingle kasursingle = new KasurSingle();
+                                                sim.pasangBarang(kasursingle,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur King Size")){
+                                                KasurKingSize kasurkingsize = new KasurKingSize();
+                                                sim.pasangBarang(kasurkingsize,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                            else if(inventory.getObjects().get(pasang-1).getNama().equals("Kasur Queen Size")){
+                                                KasurQueenSize kasurqueen = new KasurQueenSize();
+                                                sim.pasangBarang(kasurqueen,xpasang,ypasang);
+                                                inventory.removeObject(inventory.getObjects().get(pasang-1));
+                                            }
+                                        }
+                                        else{
                                             System.out.println("command salah");
-                                            break;
+                                        }
+                                    }
+                                    else{
+                                        System.out.println("command salah");
                                     }
                                     break;
                                 case "melihat waktu":
@@ -724,4 +771,3 @@ public class Main {
         }
     }
 }
-

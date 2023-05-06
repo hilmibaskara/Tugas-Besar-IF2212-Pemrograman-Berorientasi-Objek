@@ -3,6 +3,7 @@ package com.simplicity.World;
 
 import com.simplicity.Rumah.*;
 import java.util.*;
+import java.lang.*;
 
 public class World {
     private int panjang = 64;
@@ -10,8 +11,9 @@ public class World {
     private int day = 0;
     private int time = 0;
     private List<Rumah> listRumah = new  ArrayList<>();
-    private static World world = new World();
+    private Object lock = new Object();
     private boolean[][] map;
+    private static World instance = new World();
     
     public World() {
         this.panjang = panjang;
@@ -19,10 +21,16 @@ public class World {
         map = new boolean[panjang][lebar];
     }
 
+    public static World getInstance(){
+        return World.instance;
+    }
+
     public void addRumah(Rumah rumah){
         listRumah.add(rumah);
     }
-
+    public Object getLock(){
+        return this.lock;
+    }
     public void removeRumah(Rumah rumah){
         listRumah.remove(rumah);
     }
@@ -30,14 +38,11 @@ public class World {
     public List<Rumah> getRumah(){
         return listRumah;
     }
-
-    static World getWorld(){
-        return world;
-    }
+    
     public void printListRumah(){
         System.out.println("daftar rumah");
         for (int i = 0; i < listRumah.size(); i++) {
-            System.out.println((i+1) + ". " + listRumah.get(i) + listRumah.get(i).getNamaOwner());
+            System.out.println((i+1) + ". " + "rumah "+ listRumah.get(i).getNamaOwner());
         }
     }
     
@@ -72,11 +77,11 @@ public class World {
     public void addTime(int time){
         int total = this.time + time;
         if(total>720){
-            setDay((day+total)/720);
-            setTime(total%720);
+            instance.setDay((day+total)/720);
+            World.getInstance().setTime(total%720);
         }
         else{
-            setTime(total);
+            instance.setTime(total);
         }
     }
 

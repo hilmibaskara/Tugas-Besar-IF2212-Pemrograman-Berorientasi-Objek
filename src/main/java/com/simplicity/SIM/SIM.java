@@ -6,7 +6,9 @@ import com.simplicity.World.*;
 import com.simplicity.Job.*;
 import com.simplicity.Objek.*;
 
-public class SIM {
+import java.util.concurrent.locks.ReentrantLock;
+import java.lang.*;
+public class SIM{
     private String namaLengkap;
     private Job pekerjaan;
     private int uang;
@@ -25,11 +27,13 @@ public class SIM {
     private Rumah locRumahSim;
     private Ruangan locRuangSim;
     private String currentobj;
+    private Object kunci = World.getInstance().getLock();
+    private ReentrantLock lock = new ReentrantLock();
     private boolean isAlive;
 
     public SIM(String namaLengkap){
         this.namaLengkap = namaLengkap;
-        this.uang = 100;
+        this.uang = 2000;
         this.kekenyangan = 80;
         this.mood = 80;
         this.kesehatan = 80;
@@ -59,6 +63,13 @@ public class SIM {
 
     public String getNamaLengkap() {
         return this.namaLengkap;
+    }
+
+    public void setWorld(World world) {
+        this.world=world;
+    }
+    public World getWorld() {
+       return this.world;
     }
 
     public void setNamaLengkap(String namaLengkap) {
@@ -191,14 +202,15 @@ public class SIM {
         if (mood == 0 && kesehatan == 0 && kekenyangan == 0){
             isAlive = false;
             System.out.println("SIM meninggal");
+            System.exit(0);
         }else{
             isAlive = true;
         }
     }
 
     public void durasiTidurdanBuangAir(int time){
-        int currentTime = world.getDay() * 720 + world.getTime() + time;
-        world.addTime(time);
+        int currentTime = World.getInstance().getDay() * 720 + World.getInstance().getTime() + time;
+        
         if (currentTime - durasimulaimakan >= 240 && buangair == false && mulaimakan == true){
             kesehatan -= -5;
             mood -= 5;
@@ -210,44 +222,24 @@ public class SIM {
             setdurasimulaitidur(durasimulaitidur + 600);
         }
     }
+    
     //implementasi aksi membeli objek
     public void buyObjek(Objek barang) {
         int hargaBarang = barang.getHarga();
-        int waktuPengiriman;
-        int waktuSelesai;
-        boolean tick = true;
         if (uang >= hargaBarang) {
+            // Waktu pengiriman
+            ObjectDuration durasikirim = new ObjectDuration(barang, this);
+            durasikirim.start();
             // Kurangi uang sesuai harga barang
             uang -= hargaBarang;
-            // Tentukan waktu pengiriman
-            waktuPengiriman = (int) (Math.random() * 5 + 1) * 30;
-            waktuSelesai = world.getDay()*720 + world.getTime() + waktuPengiriman;
-            while (tick){
-                synchronized(this){
-                    try{
-                        wait();
-                    }catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (world.getDay() * 720 + world.getTime() >= waktuSelesai){
-                    tick = false;
-                }
-            }
-            // Tambahkan barang ke inventory
-            inventory.addObject(barang);
-            System.out.println("Barang " + barang + " telah diterima dan masuk ke dalam inventory.");
         }
         else {
-            System.out.println("Maaf, uang tidak cukup untuk membeli barang tersebut.");
+            System.out.print("Maaf, uang tidak cukup untuk membeli barang tersebut.");
         }
-
     }
-
+    
     //implementasi aksi upgrade rumah
     public void upgradeRumah(Ruangan namaRuanganbaru, Ruangan ruangAcuan, String posisi){
-        int waktuSelesai;
-        boolean tick = true; 
         if (uang >= 1500) { // cek apakah uang sim mencukupi untuk upgrade rumah
             if (locRumahSim.getDaftarRuangan().size() >= 2) { // cek apakah sim sudah memiliki lebih dari 1 ruangan
                 if (namaRuanganbaru.equals(ruangAcuan)) { // cek apakah ruang acuan yang dipilih ada di daftar ruangan sim
@@ -258,22 +250,8 @@ public class SIM {
             // Mengurangi uang
             uang -= 1500;
             // implementasi timerupgraderumah
-            waktuSelesai = world.getDay() + world.getTime() + 1080;
-            while (tick) {
-                synchronized (this) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        System.err.println(e);
-                    }
-                }
-                // mengecek jam
-                if (world.getDay() * 720 + world.getTime() >= waktuSelesai) {
-                    tick = false;
-                }
-            }
-            // Menambah ruangan baru
-            locRumahSim.pasangRuanganBaru(namaRuanganbaru, ruangAcuan, posisi);
+            UpgradeDuration durasibangun = new UpgradeDuration(namaRuanganbaru, ruangAcuan, posisi,this);
+            durasibangun.start();
         } else {
             System.out.println("Uang sim tidak mencukupi untuk upgrade rumah.");
         }
@@ -288,7 +266,7 @@ public class SIM {
                 this.uang -= setengahGaji; //mengurangi uang SIM sebesar setengah gaji pekerjaan baru
                 this.pekerjaan = pekerjaanbaru; //mengganti pekerjaan SIM dengan pekerjaan baru
                 setdurasikerja(0);
-                this.keluarkerja = world.getDay();
+                this.keluarkerja = World.getInstance().getDay();
                 System.out.println("Pekerjaan berhasil diganti menjadi " + pekerjaanbaru.getNamaPekerjaan() + ".");
             } else {
                 System.out.println("Maaf, uang Anda tidak cukup untuk membayar setengah gaji pekerjaan baru.");
@@ -302,12 +280,10 @@ public class SIM {
     public void kerja(int durasi)  {
         if (status.equals("idle")) {
             if (durasi % 120 == 0) { // validasi kelipatan 120 detik
+                lock.lock();
                 status = "working";
-                int currentDay = world.getDay();
+                int currentDay = World.getInstance().getDay();
                 if((currentDay-keluarkerja > 0)){
-                    synchronized (this) {
-                        notify();
-                    }
                     try{
                         for (int i = 0; i < durasi; i++) {
                             // Menunggu sampai waktu main selesai
@@ -318,31 +294,33 @@ public class SIM {
                             }
                         }
                     }finally{
-                        uang += pekerjaan.getGaji();
+                        lock.unlock();
                         kekenyangan = kekenyangan - (durasi/3);
                         mood = mood - (durasi/3);
                         durasiTidurdanBuangAir(durasi);
                         cekKesejahteraan();
                         status = "idle";   
                     }
+                    synchronized (kunci) {
+                        kunci.notifyAll();
+                    }
                     this.durasikerja = durasikerja + durasi;
+                    if (durasikerja % 240 == 0){
+                        uang += pekerjaan.getGaji();
+                    }
                 }
             }
         } else {
             System.out.println("Durasi kerja harus kelipatan 120 detik.");
         }
     }
-    
-    
 
     // Implementasi aksi olahraga
     public void olahraga(int durasi) {
         if (status.equals("idle")) {
             if(durasi % 20 == 0){// validasi kelipatan 20 detik
+                lock.lock();
                 status = "olahraga";
-                synchronized (this) {
-                    notify();
-                }
                 try{
                     for (int i = 0; i < durasi; i++) {
                         // Menunggu sampai waktu main selesai
@@ -353,12 +331,17 @@ public class SIM {
                         }
                     }
                 }finally{
+                    lock.unlock();
                     kekenyangan -= (durasi/4);
                     kesehatan += (durasi/4);
                     mood += (durasi/2);
                     durasiTidurdanBuangAir(durasi);
                     cekKesejahteraan();
                     status = "idle";   
+                    World.getInstance().setTime(World.getInstance().getTime()+durasi);
+                }
+                synchronized (kunci) {
+                    kunci.notifyAll();
                 }
             }else{
                 System.out.println("Durasi olahraga harus merupakan kelipatan 20 detik.");
@@ -371,10 +354,8 @@ public class SIM {
     public void tidur(int durasiTidur) {
         if (status.equals("idle")) {
             if(currentobj.equals("KasurKingSize") || currentobj.equals("KasurQueenSize") || currentobj.equals("KasurSingle")){
+                lock.lock();
                 status = "tidur";
-                synchronized (this) {
-                    notify();
-                }
                 try{
                     for (int i = 0; i < durasiTidur; i++) {
                         if (durasiTidur % 240 == 0) { 
@@ -389,8 +370,12 @@ public class SIM {
                         }
                     }
                 }finally{
+                    lock.unlock();
                     cekKesejahteraan();
                     status = "idle";   
+                }
+                synchronized (kunci) {
+                    kunci.notifyAll();
                 }
                 int currentTime = world.getDay() * 720 + world.getTime();
                 setdurasimulaitidur(currentTime);
@@ -405,11 +390,9 @@ public class SIM {
             if (inventory.contains(makanan)) {
                 inventory.removeObject(makanan);
                 status = "makan";
-                synchronized (this) {
-                    notify();
-                }
+                lock.lock();
+                int waktuMakan = 30; // Lama waktu makan 
                 try{
-                    int waktuMakan = 30; // Lama waktu makan 
                     int counter = 0;
                     for (int i = 0; i < waktuMakan; i++) {
                         if (counter % 30 == 0){
@@ -424,11 +407,15 @@ public class SIM {
                     }
                 }
                 finally{
+                    lock.unlock();
                     durasiTidurdanBuangAir(30);
                     cekKesejahteraan();
                     buangair = false;
                     mulaimakan = true;
                     status = "idle";   
+                }
+                synchronized (kunci) {
+                    kunci.notifyAll();
                 }
             } else {
                 System.out.println("Tidak ada makanan tersebut di inventory.");
@@ -455,9 +442,7 @@ public class SIM {
         if (bahanTersedia && currentobj.equals("komporgas") || currentobj.equals("koporlistrik")) {
             if (status.equals("idle")) {
                 status = "masak";
-                synchronized (this) {
-                    notify();
-                }
+                lock.lock();
                 int waktuMasak = (int) (1.5 * menu.getKekenyangan());
                 try{
                     for (int i = 0; i < waktuMasak; i++) {
@@ -473,10 +458,14 @@ public class SIM {
                     }
                     inventory.addObject(menu);
                 }finally{
+                    lock.unlock();
                     mood += 10;
                     durasiTidurdanBuangAir(waktuMasak);
                     cekKesejahteraan();
                     status = "idle";   
+                }
+                synchronized (kunci) {
+                    kunci.notifyAll();
                 }
             }
         }
@@ -488,9 +477,7 @@ public class SIM {
         if (status.equals("idle")) {
             status = "berkunjung";
             System.out.println(namaLengkap + " sedang berkunjung ke rumah lain (" + waktu + " detik)...");
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             try{
                 for (int i = 0; i < waktu; i++) {
                     mood += (waktu/30) * 10; 
@@ -503,9 +490,13 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktu);
                 cekKesejahteraan();
                 status = "idle";   
+            }
+            synchronized (kunci) {
+                kunci.notifyAll();
             }
         }
     }
@@ -515,9 +506,7 @@ public class SIM {
     public void buangAir() {
         if (status.equals("idle") && currentobj.equals("Toilet")) {
             status = "BuangAir";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuBuangAir = (int) (Math.random() * 21) + 10; // Waktu buang air secara random antara 10-30 detik
             try{
                 int counter = 0;
@@ -535,11 +524,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            }
             int currentTime = world.getDay() * 720 + world.getTime() + waktuBuangAir;
-            world.addTime(waktuBuangAir);
             buangair = true;
         }
     }
@@ -553,7 +545,7 @@ public class SIM {
     public void pasangBarang(ObjekNonMakanan namaBarang, int x, int y) {
         //menambahkan objek
         locRuangSim.tambahObjek(namaBarang, x, y);
-        System.out.println("Barang " + namaBarang + " telah dipasang pada posisi " + x + "," + y);
+        System.out.println("Barang " + namaBarang.getNama() + " telah dipasang pada posisi " + x + "," + y);
     }
 
     //implementasi aksi berpindah ruangan
@@ -566,9 +558,9 @@ public class SIM {
     //implementasi aksi melihat waktu
     public void melihatWaktu(){
         if (currentobj.equals("Jam")) {
-            int waktu = world.getTime();
-            System.out.println("Sekarang hari ke -  " + world.getDay());
-            System.out.println("Waktu Sekarang : " + waktu);
+            int waktu = World.getInstance().getTime();
+            System.out.println("Sekarang hari ke -  " + World.getInstance().getDay());
+            System.out.println("Waktu Sekarang : " + waktu + " detik");
         }
         else{
             System.out.println("Maaf, pindah ke jam di ruangan ini dulu.");
@@ -579,9 +571,7 @@ public class SIM {
     public void mandi(){
         if (status.equals("idle")) {
             status = "mandi";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuMandi = 10;
             try{
                 for (int i = 0; i < waktuMandi; i++) {
@@ -595,10 +585,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuMandi);
                 cekKesejahteraan();
                 status = "idle";   
-            }      
+            }     
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -606,9 +600,7 @@ public class SIM {
     public void mainGame() {
         if (status.equals("idle")) {
             status = "mainGame";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuMain = 10;
             try{
                 for (int i = 0; i < waktuMain; i++) {
@@ -623,10 +615,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuMain);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -634,9 +630,7 @@ public class SIM {
     public void menontonFilm() {
         if (status.equals("idle")) {
             status = "menontonFilm";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuNonton = 10;
             try{
                 for (int i = 0; i < waktuNonton; i++) {
@@ -650,10 +644,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuNonton);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -661,9 +659,7 @@ public class SIM {
     public void membaca() {
         if (status.equals("idle")) {
             status = "membaca";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuMembaca = 10;
             try{
                 for (int i = 0; i < waktuMembaca; i++) {
@@ -677,10 +673,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuMembaca);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -688,9 +688,7 @@ public class SIM {
     public void membersihkanRuangan() {
         if (status.equals("idle")) {
             status = "membersihkanRuangan";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktumembersihkanRuangan = 10;
             try{
                 for (int i = 0; i < waktumembersihkanRuangan; i++) {
@@ -704,10 +702,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktumembersihkanRuangan);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -715,9 +717,7 @@ public class SIM {
     public void meditasi() {
         if (status.equals("idle")) {
             status = "meditasi";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuMeditasi = 10;
             try{
                 for (int i = 0; i < waktuMeditasi; i++) {
@@ -731,10 +731,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuMeditasi);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 
@@ -742,9 +746,7 @@ public class SIM {
     public void belajar() {
         if (status.equals("idle")) {
             status = "belajar";
-            synchronized (this) {
-                notify();
-            }
+            lock.lock();
             int waktuBelajar = 10;
             try{
                 for (int i = 0; i < waktuBelajar; i++) {
@@ -759,10 +761,14 @@ public class SIM {
                     }
                 }
             }finally{
+                lock.unlock();
                 durasiTidurdanBuangAir(waktuBelajar);
                 cekKesejahteraan();
                 status = "idle";   
             }
+            synchronized (kunci) {
+                kunci.notifyAll();
+            } 
         }
     }
 }
